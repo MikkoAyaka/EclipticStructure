@@ -1,0 +1,5 @@
+name: EclipticStructure
+version: '${project.version}'
+main: org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
+api-version: '1.20'
+authors: [MikkoAyaka]
