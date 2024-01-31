@@ -88,7 +88,7 @@ data class Zone (
         forEach { world, x, y, z ->
             val deferred = EStructureScope.async {
                 val block = world.getBlockAt(x, y, z)
-                block.type.isBlock
+                block.type.isSolid
             }
             deferredResults.add(deferred)
         }
@@ -106,7 +106,7 @@ data class Zone (
             zRange.forEach { z ->
                 val deferred = EStructureScope.async {
                     val block = world.getBlockAt(x, minLocation.blockY - 1, z)
-                    block.type.isBlock
+                    block.type.isSolid
                 }
                 deferredResults.add(deferred)
             }
