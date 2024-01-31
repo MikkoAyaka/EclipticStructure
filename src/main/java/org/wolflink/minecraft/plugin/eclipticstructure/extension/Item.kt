@@ -9,7 +9,10 @@ import org.bukkit.inventory.ItemStack
   */
 fun Player.hasItems(items: Set<ItemStack>) = hasItems(items.associate { it.type to it.amount })
 fun Player.hasItems(items: Map<Material,Int>):Boolean {
-    val inventoryItems = this.inventory.associate { it.type to it.amount }
+    val inventoryItems = this.inventory
+        .filterNotNull()
+        .groupingBy { it.type }
+        .fold(0) { acc, item -> acc + item.amount }
     for (item in items) {
         if(inventoryItems.getOrDefault(item.key,0) < item.value) return false
     }

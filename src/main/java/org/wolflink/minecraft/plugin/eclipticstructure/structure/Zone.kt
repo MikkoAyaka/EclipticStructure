@@ -1,19 +1,40 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
+import com.sk89q.worldedit.extent.clipboard.Clipboard
+import kotlinx.coroutines.*
+import org.bukkit.Bukkit
 import org.bukkit.Location
+import org.bukkit.World
 import org.bukkit.entity.Player
+import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
+import kotlin.math.min
 
 /**
  * 区域对象
+ * 区域是可部分重叠，不可完全重叠的，玩家可能同时处在多个区域中
  */
-data class Zone(
+data class Zone (
     val worldName: String,
     val xRange: IntRange,
     val yRange: IntRange,
     val zRange: IntRange
 ) {
+    val minLocation: Location = Location(Bukkit.getWorld(worldName),xRange.first.toDouble(),yRange.first.toDouble(),zRange.first.toDouble())
+    val maxLocation: Location = Location(Bukkit.getWorld(worldName),xRange.last.toDouble(),yRange.last.toDouble(),zRange.last.toDouble())
     companion object {
-        fun of(points: Pair<Location, Location>): Zone {
+        //最小点 -465 -60 558
+        //最大点 -461 -55 562
+        fun create(world: World, relative: Location, clipboard: Clipboard): Zone {
+            val minPoint = clipboard.minimumPoint
+            val maxPoint = clipboard.maximumPoint
+            return Zone(
+                world.name,
+                (minPoint.blockX+relative.blockX)..(maxPoint.blockX+relative.blockX),
+                (minPoint.blockY+relative.blockY)..(maxPoint.blockY+relative.blockY),
+                (minPoint.blockZ+relative.blockZ)..(maxPoint.blockZ+relative.blockZ),
+                )
+        }
+        fun create(points: Pair<Location, Location>): Zone {
             if (points.first.world.name != points.second.world.name) throw IllegalArgumentException("尝试在不同世界中创建区域")
 
             val xRange = if (points.first.blockX <= points.second.blockX) {
@@ -37,7 +58,42 @@ data class Zone(
             return Zone(points.first.world.name, xRange, yRange, zRange)
         }
     }
+    fun forEach(action: (world: World,x: Int,y: Int,z: Int)->Unit) {
+        val world = Bukkit.getWorld(worldName) ?: throw IllegalStateException("不可能发生的错误，未找到世界：$worldName")
+        for (x in xRange) {
+            for (y in yRange) {
+                for (z in zRange) {
+                    action.invoke(world,x,y,z)
+                }
+            }
+        }
+    }
 
+    /**
+     * 会阻塞当前线程直至粒子效果渲染完毕
+     */
+    suspend fun display(durationInSeconds: Int, spawnParticle: (world:World, x:Int, y:Int, z:Int)->Unit) {
+        repeat(durationInSeconds) {
+            forEach { world, x, y, z -> spawnParticle(world,x,y,z) }
+            delay(1000)
+        }
+    }
+    /**
+     * 该区域是否无实体方块遮挡(忽略草丛鲜花等)
+     */
+    suspend fun isEmpty(): Boolean {
+        val deferredResults = mutableListOf<Deferred<Boolean>>()
+        forEach { world, x, y, z ->
+            val deferred = EStructureScope.async {
+                val block = world.getBlockAt(x, y, z)
+                block.type.isSolid
+            }
+            deferredResults.add(deferred)
+        }
+        val results = deferredResults.awaitAll()
+        val result = results.any{ true }
+        return result
+    }
     operator fun contains(point: Location) =
         point.world.name == worldName
                 && point.blockX in xRange

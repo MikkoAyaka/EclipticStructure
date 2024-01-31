@@ -1,5 +1,5 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
-class Structure(val zone: Zone) {
-    private val available = false
+abstract class Structure(val blueprint: StructureBlueprint,val builder: StructureBuilder) {
+    var available = false
 }
