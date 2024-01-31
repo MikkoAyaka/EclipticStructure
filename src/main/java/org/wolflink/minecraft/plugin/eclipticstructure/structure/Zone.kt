@@ -91,9 +91,9 @@ data class Zone (
     /**
      * 会阻塞当前线程直至粒子效果渲染完毕
      */
-    suspend fun display(durationInSeconds: Int, spawnParticle: (world:World, x:Int, y:Int, z:Int)->Unit) {
+    suspend fun display(durationInSeconds: Int, spawnParticle: (world:World, x:Double, y:Double, z:Double)->Unit) {
         repeat(durationInSeconds) {
-            forEach { world, x, y, z -> spawnParticle(world,x,y,z) }
+            forEach { world, x, y, z -> spawnParticle(world,x.toDouble(),y.toDouble(),z.toDouble()) }
             delay(1000)
         }
     }

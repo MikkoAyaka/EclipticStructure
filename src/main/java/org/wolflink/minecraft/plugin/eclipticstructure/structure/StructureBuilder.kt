@@ -107,7 +107,7 @@ class StructureBuilder(
         // 判断区域是否有足够的空间 并且空间内没有玩家 并且空间有地板支撑
         while (!zone.isEmpty() || zone.players.isNotEmpty() || !zone.hasFloor()) {
             zone.display(5) { w, x, y, z ->
-                w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x.toDouble(),y.toDouble(),z.toDouble(), 3, dustOptions); // 30 是粒子的数量
+                w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x+0.5,y+0.5,z+0.5, 3, dustOptions); // 30 是粒子的数量
             }
         }
         // 放置脚手架
