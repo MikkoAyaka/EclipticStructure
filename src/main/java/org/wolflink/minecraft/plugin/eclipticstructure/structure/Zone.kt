@@ -111,7 +111,7 @@ data class Zone (
             deferredResults.add(deferred)
         }
         val results = deferredResults.awaitAll()
-        return results.any { true }
+        return results.all { false }
     }
 
     /**
