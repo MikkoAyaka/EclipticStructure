@@ -1,30 +1,22 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
-import com.sk89q.worldedit.EditSession
 import com.sk89q.worldedit.bukkit.BukkitAdapter
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader
 import com.sk89q.worldedit.math.BlockVector3
 import com.sk89q.worldedit.world.block.BaseBlock
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import net.kyori.adventure.sound.Sound
-import org.bukkit.Bukkit
 import org.bukkit.Color
 import org.bukkit.Location
-import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Particle.DustTransition
 import org.bukkit.entity.Player
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
-import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
-import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_INSUFFICIENT_ITEMS
-import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_START_BUILDING
-import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_STATUS_ERROR
+import org.wolflink.minecraft.plugin.eclipticstructure.config.*
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.getRelative
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.takeItems
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
+import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
 
 /**
  * 建筑结构 建造者
@@ -54,22 +46,34 @@ class StructureBuilder(
     // 当前剩余时间
     private val leftSeconds = blueprint.buildSeconds
 
+    private fun canBuild(player: Player): Boolean {
+        // 状态异常
+        if (status != Status.NOT_STARTED) {
+            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR)
+            return false
+        }
+        // 玩家缺少足够的材料
+        if (!player.takeItems(*blueprint.requiredItems)) {
+            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_INSUFFICIENT_ITEMS)
+            return false
+        }
+        // 空间存在重叠
+        if(ZoneRepository.findByOverlap(zone).isNotEmpty()) {
+            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_ZONE_OVERLAP)
+            return false
+        }
+        return true
+    }
     /**
      * 准备进行建造
      */
     fun build(player: Player) {
-        // 状态判定
-        if (status != Status.NOT_STARTED) {
-            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR)
-            return
-        }
-        // 玩家是否拥有足够材料
-        if (!player.takeItems(*blueprint.requiredItems)) {
-            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_INSUFFICIENT_ITEMS)
-            return
-        }
+        // 建筑前检查
+        if(!canBuild(player)) return
         // 保存建筑结构对象至仓库
         StructureRepository.insert(structureMeta.structureSupplier(this))
+        // 保存建筑结构区域至仓库
+        ZoneRepository.insert(zone)
         // 开始建造
         EStructureScope.launch {
             startBuilding()

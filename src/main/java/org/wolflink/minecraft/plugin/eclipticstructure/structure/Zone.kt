@@ -20,8 +20,10 @@ data class Zone (
 ) {
     val players: Set<Player>
         get() = Bukkit.getOnlinePlayers().filter { it.location in this }.toSet()
-    val minLocation: Location = Location(Bukkit.getWorld(worldName),xRange.first.toDouble(),yRange.first.toDouble(),zRange.first.toDouble())
-    val maxLocation: Location = Location(Bukkit.getWorld(worldName),xRange.last.toDouble(),yRange.last.toDouble(),zRange.last.toDouble())
+    val minLocation: Location
+        get() = Location(Bukkit.getWorld(worldName),xRange.first.toDouble(),yRange.first.toDouble(),zRange.first.toDouble())
+    val maxLocation: Location
+        get() = Location(Bukkit.getWorld(worldName),xRange.last.toDouble(),yRange.last.toDouble(),zRange.last.toDouble())
     companion object {
         //最小点 -465 -60 558
         //最大点 -461 -55 562
@@ -58,6 +60,22 @@ data class Zone (
 
             return Zone(points.first.world.name, xRange, yRange, zRange)
         }
+    }
+
+    /**
+     * 获取长方体区域的8个顶点坐标
+     */
+    private fun getVertex(): Set<Location> {
+        return setOf(
+            minLocation,
+            minLocation.apply { x = maxLocation.x },
+            minLocation.apply { x = maxLocation.x }.apply { y = maxLocation.y },
+            minLocation.apply { y = maxLocation.y },
+            minLocation.apply { z = maxLocation.z },
+            minLocation.apply { z = maxLocation.z }.apply { x = maxLocation.x },
+            minLocation.apply { z = maxLocation.z }.apply { y = maxLocation.y },
+            maxLocation
+            )
     }
     fun forEach(action: (world: World,x: Int,y: Int,z: Int)->Unit) {
         val world = Bukkit.getWorld(worldName) ?: throw IllegalStateException("不可能发生的错误，未找到世界：$worldName")
@@ -122,4 +140,11 @@ data class Zone (
 
     operator fun contains(player: Player) =
         contains(player.location)
+
+    /**
+     * 是否与某个区域相交
+     */
+    fun overlap(another:Zone): Boolean {
+        return getVertex().any { it in another } || another.getVertex().any{ it in this }
+    }
 }
