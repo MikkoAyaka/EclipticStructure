@@ -7,7 +7,6 @@ import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
-import kotlin.math.min
 
 /**
  * 区域对象
@@ -80,6 +79,7 @@ data class Zone (
             delay(1000)
         }
     }
+
     /**
      * 该区域是否无实体方块遮挡，也没有玩家在区域中(忽略草丛鲜花等)
      */
@@ -88,13 +88,12 @@ data class Zone (
         forEach { world, x, y, z ->
             val deferred = EStructureScope.async {
                 val block = world.getBlockAt(x, y, z)
-                block.type.isSolid
+                block.type.isBlock
             }
             deferredResults.add(deferred)
         }
         val results = deferredResults.awaitAll()
-        val result = results.any{ true }
-        return result
+        return results.any { true }
     }
     operator fun contains(point: Location) =
         point.world.name == worldName

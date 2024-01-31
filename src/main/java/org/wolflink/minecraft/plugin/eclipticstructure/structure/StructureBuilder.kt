@@ -101,7 +101,7 @@ class StructureBuilder(
         // 创建粒子效果的选项
         val dustOptions = DustTransition(startColor, endColor, 2.0f) // 1.0f 是粒子的大小
         // 判断区域是否有足够的空间 并且空间内没有玩家
-        while (!zone.isEmpty() && zone.players.isEmpty()) {
+        while (!zone.isEmpty() || zone.players.isNotEmpty()) {
             zone.display(5) { w, x, y, z ->
                 w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x.toDouble(),y.toDouble(),z.toDouble(), 3, dustOptions); // 30 是粒子的数量
             }
