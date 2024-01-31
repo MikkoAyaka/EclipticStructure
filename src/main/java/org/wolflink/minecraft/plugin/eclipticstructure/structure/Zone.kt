@@ -19,6 +19,8 @@ data class Zone (
     val yRange: IntRange,
     val zRange: IntRange
 ) {
+    val players: Set<Player>
+        get() = Bukkit.getOnlinePlayers().filter { it.location in this }.toSet()
     val minLocation: Location = Location(Bukkit.getWorld(worldName),xRange.first.toDouble(),yRange.first.toDouble(),zRange.first.toDouble())
     val maxLocation: Location = Location(Bukkit.getWorld(worldName),xRange.last.toDouble(),yRange.last.toDouble(),zRange.last.toDouble())
     companion object {
@@ -79,7 +81,7 @@ data class Zone (
         }
     }
     /**
-     * 该区域是否无实体方块遮挡(忽略草丛鲜花等)
+     * 该区域是否无实体方块遮挡，也没有玩家在区域中(忽略草丛鲜花等)
      */
     suspend fun isEmpty(): Boolean {
         val deferredResults = mutableListOf<Deferred<Boolean>>()

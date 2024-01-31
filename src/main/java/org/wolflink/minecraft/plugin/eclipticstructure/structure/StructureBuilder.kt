@@ -1,5 +1,6 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
+import com.sk89q.worldedit.EditSession
 import com.sk89q.worldedit.bukkit.BukkitAdapter
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader
 import com.sk89q.worldedit.math.BlockVector3
@@ -99,8 +100,8 @@ class StructureBuilder(
         val endColor: Color = Color.fromRGB(255, 0, 0) // 红色变深
         // 创建粒子效果的选项
         val dustOptions = DustTransition(startColor, endColor, 2.0f) // 1.0f 是粒子的大小
-        // 判断区域是否有足够的空间
-        while (!zone.isEmpty()) {
+        // 判断区域是否有足够的空间 并且空间内没有玩家
+        while (!zone.isEmpty() && zone.players.isEmpty()) {
             zone.display(5) { w, x, y, z ->
                 w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x.toDouble(),y.toDouble(),z.toDouble(), 3, dustOptions); // 30 是粒子的数量
             }
