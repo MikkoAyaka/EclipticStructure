@@ -111,7 +111,7 @@ data class Zone (
             deferredResults.add(deferred)
         }
         val results = deferredResults.awaitAll()
-        return results.all { false }
+        return results.all { !it }
     }
 
     /**
@@ -130,7 +130,7 @@ data class Zone (
             }
         }
         val results = deferredResults.awaitAll()
-        return results.all { true }
+        return results.all { it }
     }
     operator fun contains(point: Location) =
         point.world.name == worldName
