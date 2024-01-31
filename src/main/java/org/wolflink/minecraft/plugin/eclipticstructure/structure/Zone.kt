@@ -95,6 +95,25 @@ data class Zone (
         val results = deferredResults.awaitAll()
         return results.any { true }
     }
+
+    /**
+     * 该区域是否拥有地板
+     */
+    suspend fun hasFloor(): Boolean {
+        val world = Bukkit.getWorld(worldName) ?: throw IllegalStateException("不可能发生的错误，未找到世界：$worldName")
+        val deferredResults = mutableListOf<Deferred<Boolean>>()
+        xRange.forEach { x ->
+            zRange.forEach { z ->
+                val deferred = EStructureScope.async {
+                    val block = world.getBlockAt(x, minLocation.blockY - 1, z)
+                    block.type.isBlock
+                }
+                deferredResults.add(deferred)
+            }
+        }
+        val results = deferredResults.awaitAll()
+        return results.all { true }
+    }
     operator fun contains(point: Location) =
         point.world.name == worldName
                 && point.blockX in xRange
