@@ -7,6 +7,7 @@ import com.sk89q.worldedit.world.block.BaseBlock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.kyori.adventure.sound.Sound
 import org.bukkit.Bukkit
 import org.bukkit.Color
 import org.bukkit.Location
@@ -84,20 +85,14 @@ class StructureBuilder(
             blockMap[vector] = it.getFullBlock(clipboard)
         }
         // 剩余待建造的方块总数
-        val leftBlockCount =
-            if(pasteAir) {
-                blockMap.size - nowIndex
-            } else {
-                blockMap.filterNot {
-                    it.value.blockType.material.isAir
-                }.size - nowIndex
-            }
+        val leftBlockCount = blockMap.size - nowIndex
         // 放置每个方块的平均延时毫秒
         val averageDelayMills: Long = (blueprint.buildSeconds / leftBlockCount.toDouble() * 1000).toLong()
         // 最小坐标
         val minLocation = zone.minLocation
+        val bukkitWorld = buildLocation.world
         // WorldEdit 世界对象
-        val world = BukkitAdapter.adapt(buildLocation.world)
+        val world = BukkitAdapter.adapt(bukkitWorld)
         // 粒子效果 TODO 移动到单独的文件中
         // 创建起始颜色和结束颜色
         val startColor: Color = Color.fromRGB(255, 128, 128) // 红色
@@ -106,7 +101,7 @@ class StructureBuilder(
         val dustOptions = DustTransition(startColor, endColor, 2.0f) // 1.0f 是粒子的大小
         // 判断区域是否有足够的空间
         while (!zone.isEmpty()) {
-            zone.display(15) { w, x, y, z ->
+            zone.display(5) { w, x, y, z ->
                 w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x.toDouble(),y.toDouble(),z.toDouble(), 3, dustOptions); // 30 是粒子的数量
             }
         }
@@ -118,22 +113,24 @@ class StructureBuilder(
 //        }
         val list = blockMap.toList()
         // 放置方块
-        while (nowIndex++ < leftBlockCount) {
+        while (nowIndex++ < leftBlockCount - 1) {
             val pair = list[nowIndex]
             val blockVector = pair.first
             val fullBlock = pair.second
             if(fullBlock.blockType.material.isAir && !pasteAir) continue
             delay(averageDelayMills)
+            // 坐标计算
+            val x = minLocation.blockX + blockVector.blockX
+            val y = minLocation.blockY + blockVector.blockY
+            val z = minLocation.blockZ + blockVector.blockZ
+            val material = BukkitAdapter.adapt(fullBlock)
             EclipticStructure.runTask {
-                world.setBlock(
-                    minLocation.blockX + blockVector.blockX,
-                    minLocation.blockY + blockVector.blockY,
-                    minLocation.blockZ + blockVector.blockZ,
-                    fullBlock.toBlockState()
-                )
+                // 放置方块
+                world.setBlock(x, y, z, fullBlock.toBlockState())
+                // 播放方块放置音效
+                bukkitWorld.playSound(Location(bukkitWorld,x.toDouble(),y.toDouble(),z.toDouble()),material.soundGroup.placeSound,1f,1f)
             }
         }
-        println("完成")
         status = Status.COMPLETED
     }
 }
