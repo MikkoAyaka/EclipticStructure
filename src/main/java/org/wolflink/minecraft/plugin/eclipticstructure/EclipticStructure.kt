@@ -1,15 +1,13 @@
 package org.wolflink.minecraft.plugin.eclipticstructure
 
-import eu.decentsoftware.holograms.api.DHAPI
 import kotlinx.coroutines.cancel
-import net.byteflux.libby.BukkitLibraryManager
-import net.byteflux.libby.Library
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
+import org.wolflink.minecraft.plugin.eclipticstructure.extension.register
 import org.wolflink.minecraft.plugin.eclipticstructure.file.FileFolders
-import org.wolflink.minecraft.plugin.eclipticstructure.library.DynamicLibrary
 import org.wolflink.minecraft.plugin.eclipticstructure.papi.ESBuilderPapi
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.StructureBuilderListener
 
 /**
  * 建筑结构库
@@ -28,6 +26,8 @@ class EclipticStructure : JavaPlugin() {
     override fun onEnable() {
         FileFolders.init()
         ESBuilderPapi.register()
+        // 注册监听器
+        StructureBuilderListener.register(this)
     }
 
     override fun onDisable() {

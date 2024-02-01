@@ -3,21 +3,23 @@ package org.wolflink.minecraft.plugin.eclipticstructure.structure
 import com.sk89q.worldedit.bukkit.BukkitAdapter
 import com.sk89q.worldedit.math.BlockVector3
 import com.sk89q.worldedit.world.block.BaseBlock
-import eu.decentsoftware.holograms.api.DHAPI
-import eu.decentsoftware.holograms.api.holograms.Hologram
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.Particle
-import org.bukkit.Particle.DustTransition
-import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
-import org.wolflink.minecraft.plugin.eclipticstructure.config.*
+import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
+import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_INSUFFICIENT_ITEMS
+import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_STATUS_ERROR
+import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_OVERLAP
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
-import org.wolflink.minecraft.plugin.eclipticstructure.extension.*
+import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureBuilderCompleteEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureBuilderStartEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.RED_DUST_PARTICLE_OPTIONS
+import org.wolflink.minecraft.plugin.eclipticstructure.extension.call
+import org.wolflink.minecraft.plugin.eclipticstructure.extension.getRelative
+import org.wolflink.minecraft.plugin.eclipticstructure.extension.takeItems
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureBuilderRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
@@ -36,6 +38,7 @@ class StructureBuilder(
         val AUTOMATIC_ID = AtomicInteger(0)
     }
     val id = AUTOMATIC_ID.getAndIncrement()
+    val uniqueName = "StructureBuilder-$id"
     init {
         StructureBuilderRepository.insert(this)
     }
@@ -55,7 +58,7 @@ class StructureBuilder(
     /**
      * 建造状态
      */
-    private enum class Status(val msg: String) {
+    enum class Status(val msg: String) {
         NOT_STARTED("§e未开始"),
         IN_PROGRESS("§f建造中"),
         ZONE_NOT_EMPTY("§c需要空间"),
@@ -64,7 +67,7 @@ class StructureBuilder(
         COMPLETED("§a已完成")
     }
 
-    private var status: Status = Status.NOT_STARTED
+    var status: Status = Status.NOT_STARTED
 
     // 当前剩余时间
     private val leftSeconds = blueprint.buildSeconds
@@ -99,9 +102,9 @@ class StructureBuilder(
         ZoneRepository.insert(zone)
         // 开始建造
         EStructureScope.launch {
+            StructureBuilderStartEvent(this@StructureBuilder,player).call()
             startBuilding()
         }
-        player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_START_BUILDING)
     }
     // 指针当前方块未建造
     private var nowIndex = 0
@@ -109,11 +112,8 @@ class StructureBuilder(
     private val averageDelayMills: Long = (blueprint.buildSeconds / blockMap.size.toDouble() * 1000).toLong()
     fun getBuildProgress() = nowIndex.toDouble() / blockMap.size
     fun getBuildTimeLeft() = blueprint.buildSeconds - (blueprint.buildSeconds * getBuildProgress()).toInt()
-    fun getBuildStatus() = status.msg
     private suspend fun startBuilding() {
         status = Status.IN_PROGRESS
-
-        createHologram()
         // 剩余待建造的方块总数
         val leftBlockCount = blockMap.size - nowIndex
         // 最小坐标
@@ -154,24 +154,7 @@ class StructureBuilder(
                 bukkitWorld.playSound(Location(bukkitWorld,x.toDouble(),y.toDouble(),z.toDouble()),material.soundGroup.placeSound,1f,1f)
             }
         }
-        hologram?.delete()
-        hologram = null
-        zone.display(5) { w, x, y, z ->
-            w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x+0.5,y+0.5,z+0.5, 3, GREEN_DUST_PARTICLE_OPTIONS); // 30 是粒子的数量
-        }
-        EclipticStructure.runTask {
-            bukkitWorld.playSound(buildLocation, Sound.BLOCK_BEACON_ACTIVATE,2f,1f)
-        }
         status = Status.COMPLETED
-    }
-    private var hologram: Hologram? = null
-    private fun createHologram() {
-        hologram = HologramAPI.createHologram(buildLocation.clone().add(0.0,3.0,0.0),
-            listOf(
-                "§7[ §r%esbuilder_${id}_status% §7] §r%esbuilder_${id}_structurename% §8| §f剩余 %esbuilder_${id}_timeleft%",
-                "§r",
-                "§f%esbuilder_${id}_progress%",
-                "§f",
-                ))
+        StructureBuilderCompleteEvent(this).call()
     }
 }
