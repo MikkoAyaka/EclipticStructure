@@ -121,7 +121,7 @@ class StructureBuilder(
         val world = BukkitAdapter.adapt(bukkitWorld)
         // 判断区域是否有足够的空间 并且空间内没有玩家 并且空间有地板支撑
         while (true) {
-            if(zone.isEmpty()) status = Status.ZONE_NOT_EMPTY
+            if(!zone.isEmpty()) status = Status.ZONE_NOT_EMPTY
             else if(zone.players.isNotEmpty()) status = Status.ZONE_HAS_PLAYER
             else if(!zone.hasFloor()) status = Status.ZONE_NO_FLOOR
             else {
