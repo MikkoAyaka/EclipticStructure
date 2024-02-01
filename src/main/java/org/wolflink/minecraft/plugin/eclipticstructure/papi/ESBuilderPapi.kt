@@ -15,7 +15,6 @@ object ESBuilderPapi: PlaceholderExpansion() {
 
     // 格式例如：%esbuilder_114_progress%
     override fun onRequest(player: OfflinePlayer?, params: String): String {
-        if(player == null) return ""
         val args = params.split("_")
         val builderId = args.getOrNull(0)?.toIntOrNull() ?: return ""
         val structureBuilder = StructureBuilderRepository.find(builderId) ?: return ""

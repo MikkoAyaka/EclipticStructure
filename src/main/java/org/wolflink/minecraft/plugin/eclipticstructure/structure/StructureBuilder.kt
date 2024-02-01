@@ -158,7 +158,7 @@ class StructureBuilder(
     }
     private var hologram: Hologram? = null
     fun createHologram() {
-        hologram = HologramAPI.createHologram(buildLocation,
+        hologram = HologramAPI.createHologram(buildLocation.clone().add(0.0,3.0,0.0),
             listOf(
                 "%esbuilder_${id}_structurename%",
                 "§r",
