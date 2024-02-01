@@ -18,6 +18,9 @@ object ESBuilderPapi: PlaceholderExpansion() {
         val args = params.split("_")
         val builderId = args.getOrNull(0)?.toIntOrNull() ?: return ""
         val structureBuilder = StructureBuilderRepository.find(builderId) ?: return ""
+        if(args.getOrNull(1) == "status") {
+            return structureBuilder.getBuildStatus()
+        }
         if(args.getOrNull(1) == "progress") {
             return TextProgressBar(structureBuilder.getBuildProgress()).getBar()
         }

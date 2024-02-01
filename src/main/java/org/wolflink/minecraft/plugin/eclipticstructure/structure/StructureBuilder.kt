@@ -11,14 +11,14 @@ import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.Particle
 import org.bukkit.Particle.DustTransition
+import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.config.*
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
-import org.wolflink.minecraft.plugin.eclipticstructure.extension.HologramAPI
+import org.wolflink.minecraft.plugin.eclipticstructure.extension.*
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.RED_DUST_PARTICLE_OPTIONS
-import org.wolflink.minecraft.plugin.eclipticstructure.extension.getRelative
-import org.wolflink.minecraft.plugin.eclipticstructure.extension.takeItems
+import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureBuilderRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
 import java.util.concurrent.atomic.AtomicInteger
@@ -36,7 +36,9 @@ class StructureBuilder(
         val AUTOMATIC_ID = AtomicInteger(0)
     }
     val id = AUTOMATIC_ID.getAndIncrement()
-
+    init {
+        StructureBuilderRepository.insert(this)
+    }
     val structureMeta = StructureRegistry.get(structureTypeName) ?: throw NullPointerException("$structureTypeName 未被注册")
     val blueprint = structureMeta.blueprint
     private val clipboard = blueprint.loadClipboard()
@@ -54,12 +56,12 @@ class StructureBuilder(
      * 建造状态
      */
     private enum class Status(val msg: String) {
-        NOT_STARTED("未开始"),
-        IN_PROGRESS("建造中"),
-        ZONE_NOT_EMPTY("需要空间"),
-        ZONE_HAS_PLAYER("存在玩家"),
-        ZONE_NO_FLOOR("需要地板"),
-        COMPLETED("已完成")
+        NOT_STARTED("§e未开始"),
+        IN_PROGRESS("§f建造中"),
+        ZONE_NOT_EMPTY("§c需要空间"),
+        ZONE_HAS_PLAYER("§c存在玩家"),
+        ZONE_NO_FLOOR("§c需要地板"),
+        COMPLETED("§a已完成")
     }
 
     private var status: Status = Status.NOT_STARTED
@@ -106,7 +108,7 @@ class StructureBuilder(
     // 放置每个方块的平均延时毫秒
     private val averageDelayMills: Long = (blueprint.buildSeconds / blockMap.size.toDouble() * 1000).toLong()
     fun getBuildProgress() = nowIndex.toDouble() / blockMap.size
-    fun getBuildTimeLeft() = (blueprint.buildSeconds * getBuildProgress()).toInt()
+    fun getBuildTimeLeft() = blueprint.buildSeconds - (blueprint.buildSeconds * getBuildProgress()).toInt()
     fun getBuildStatus() = status.msg
     private suspend fun startBuilding() {
         status = Status.IN_PROGRESS
@@ -138,8 +140,8 @@ class StructureBuilder(
             val pair = list[nowIndex]
             val blockVector = pair.first
             val fullBlock = pair.second
-            if(fullBlock.blockType.material.isAir && !pasteAir) continue
             delay(averageDelayMills)
+            if(fullBlock.blockType.material.isAir && !pasteAir) continue
             // 坐标计算
             val x = minLocation.blockX + blockVector.blockX
             val y = minLocation.blockY + blockVector.blockY
@@ -154,16 +156,22 @@ class StructureBuilder(
         }
         hologram?.delete()
         hologram = null
+        zone.display(5) { w, x, y, z ->
+            w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x+0.5,y+0.5,z+0.5, 3, GREEN_DUST_PARTICLE_OPTIONS); // 30 是粒子的数量
+        }
+        EclipticStructure.runTask {
+            bukkitWorld.playSound(buildLocation, Sound.BLOCK_BEACON_ACTIVATE,2f,1f)
+        }
         status = Status.COMPLETED
     }
     private var hologram: Hologram? = null
-    fun createHologram() {
+    private fun createHologram() {
         hologram = HologramAPI.createHologram(buildLocation.clone().add(0.0,3.0,0.0),
             listOf(
-                "%esbuilder_${id}_structurename%",
+                "§7[ §r%esbuilder_${id}_status% §7] §r%esbuilder_${id}_structurename% §8| §f剩余 %esbuilder_${id}_timeleft%",
                 "§r",
-                "§a建造进度 §f%esbuilder_${id}_progress%",
-                "§a剩余时间 §f%esbuilder_${id}_timeleft%",
+                "§f%esbuilder_${id}_progress%",
+                "§f",
                 ))
     }
 }
