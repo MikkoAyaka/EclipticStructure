@@ -18,6 +18,7 @@ data class Zone (
     val yRange: IntRange,
     val zRange: IntRange
 ) {
+    val world: World = Bukkit.getWorld(worldName) ?: throw IllegalArgumentException("未知的世界：$worldName")
     val players: Set<Player>
         get() = Bukkit.getOnlinePlayers().filter { it.location in this }.toSet()
     val minLocation: Location

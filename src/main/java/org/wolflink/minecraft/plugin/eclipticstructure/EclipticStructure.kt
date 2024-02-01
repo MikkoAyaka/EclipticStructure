@@ -8,6 +8,7 @@ import org.wolflink.minecraft.plugin.eclipticstructure.extension.register
 import org.wolflink.minecraft.plugin.eclipticstructure.file.FileFolders
 import org.wolflink.minecraft.plugin.eclipticstructure.papi.ESBuilderPapi
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.StructureBuilderListener
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.StructureDurabilityHandler
 
 /**
  * 建筑结构库
@@ -28,6 +29,7 @@ class EclipticStructure : JavaPlugin() {
         ESBuilderPapi.register()
         // 注册监听器
         StructureBuilderListener.register(this)
+        StructureDurabilityHandler.register(this)
     }
 
     override fun onDisable() {

@@ -6,8 +6,12 @@ import com.sk89q.worldedit.world.block.BaseBlock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.Particle
+import org.bukkit.Sound
+import org.bukkit.block.Container
 import org.bukkit.entity.Player
+import org.bukkit.inventory.InventoryHolder
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_INSUFFICIENT_ITEMS
@@ -52,6 +56,8 @@ class StructureBuilder(
             blockMap[vector] = it.getFullBlock(clipboard)
         }
     }
+    // 方块数量(空气除外)
+    val blockAmount = blockMap.filterNot { it.value.material.isAir }.size
     // 建筑占用区域(不可重复)
     val zone = Zone.create(buildLocation.world,clipboard.getRelative(buildLocation),clipboard)
 
@@ -156,5 +162,27 @@ class StructureBuilder(
         }
         status = Status.COMPLETED
         StructureBuilderCompleteEvent(this).call()
+    }
+
+    /**
+     * 摧毁所有方块，不会掉落物品
+     * 存在容器则只掉落容器内物品
+     *
+     * 删除建筑结构和建造者等引用，建筑被摧毁后无法恢复
+     */
+    fun destroy() {
+        StructureBuilderRepository.deleteByKey(id)
+        ZoneRepository.deleteByValue(zone)
+        zone.forEach { world, x, y, z ->
+            val location = Location(world,x.toDouble(),y.toDouble(),z.toDouble())
+            val block = world.getBlockAt(location)
+            if(block.state is Container) {
+                val container = block.state as Container
+                container.inventory.forEach { world.dropItemNaturally(location,it) }
+            }
+            block.type = Material.AIR
+        }
+        buildLocation.world.playSound(buildLocation, Sound.BLOCK_BEACON_DEACTIVATE,2f,1f)
+        buildLocation.world.playSound(buildLocation, Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST,2f,0.6f)
     }
 }

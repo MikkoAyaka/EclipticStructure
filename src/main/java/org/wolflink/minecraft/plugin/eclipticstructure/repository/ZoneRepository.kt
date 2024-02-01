@@ -7,6 +7,7 @@ import org.wolflink.minecraft.wolfird.framework.database.repository.ListReposito
 
 /**
  * Zone 区域仓库，世界名 -> 区域对象
+ * 区域是可以重叠的
  */
 object ZoneRepository : ListRepository<String, Zone>() {
     override fun getPrimaryKey(p0: Zone) = p0.worldName
@@ -27,7 +28,8 @@ object ZoneRepository : ListRepository<String, Zone>() {
                         && it.maxLocation.y >= zone.minLocation.y
                         && it.maxLocation.z >= zone.minLocation.z
             }
-            .filter { it.overlap(zone) }
+            .filter { it.overlap(zone) } // 互相存在顶点重合
+            .filter { it == zone } // 不为自己
             .toSet()
     }
 }
