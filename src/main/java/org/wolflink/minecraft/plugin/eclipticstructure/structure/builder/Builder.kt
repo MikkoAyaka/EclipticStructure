@@ -40,7 +40,7 @@ class Builder(
         val AUTOMATIC_ID = AtomicInteger(0)
     }
     val id = AUTOMATIC_ID.getAndIncrement()
-    val uniqueName = "esbuilder-$id"
+    val uniqueName = "esbuilder_$id"
     init {
         BuilderRepository.insert(this)
     }
@@ -102,7 +102,6 @@ class Builder(
     fun build(player: Player) {
         // 建筑前检查
         if(!canBuild(player)) return
-        // 保存建筑结构对象至仓库
         StructureInitializedEvent(structure).call()
         // 开始建造
         EStructureScope.launch {
@@ -125,7 +124,7 @@ class Builder(
         status = Status.COMPLETED
         // 抛出事件
         BuilderCompletedEvent(this,structure).call()
-        StructureCompletedEvent(StructureZoneRelationRepository.find1(zone))
+        StructureCompletedEvent(structure)
     }
     private suspend fun buildCheck() {
         while (true) {

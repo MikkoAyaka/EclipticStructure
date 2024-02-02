@@ -12,11 +12,11 @@ object BuilderListener: Listener, IBuilderListener {
     override fun started(e: BuilderStartedEvent) {
         e.builder.decorator.started(e)
     }
-
+    @EventHandler
     override fun toggleStatus(e: BuilderStatusEvent) {
         e.builder.decorator.toggleStatus(e)
     }
-
+    @EventHandler
     override fun destroyed(e: BuilderDestroyedEvent) {
         e.builder.decorator.destroyed(e)
     }

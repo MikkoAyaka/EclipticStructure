@@ -80,7 +80,7 @@ object StructureDurabilityListener: Listener {
             zone.maxLocation.clone().add(MONSTER_CHECK_RADIUS,MONSTER_CHECK_RADIUS,MONSTER_CHECK_RADIUS),
         )
         val structure = e.structure
-        val taskId = Bukkit.getScheduler().runTaskTimerAsynchronously(EclipticStructure.instance, Runnable {
+        val taskId = Bukkit.getScheduler().runTaskTimer(EclipticStructure.instance, Runnable {
             val monsterAmount = world.getNearbyEntities(box) { it is Monster }.size
             structure.doDamage(monsterAmount * PER_MONSTER_DAMAGE,Structure.DamageSource.MONSTER_OCCUPY)
         },20L,20L).taskId

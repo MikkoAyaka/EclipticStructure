@@ -5,13 +5,18 @@ import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureCompletedE
 import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureDestroyedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureInitializedEvent
 
-class StructureDecorator(val structure: Structure): IStructureListener {
-    private val hologram = ESHologram(structure.uniqueName,structure.builder.buildLocation,listOf(
-        "§r%${structure.uniqueName}_structurename%",
-        "§r",
-        "§f%${structure.uniqueName}_durabilitybar%",
-        "§f",
-    ))
+class StructureDecorator(val structure: Structure) : IStructureListener {
+    private val hologram by lazy {
+        ESHologram(
+            structure.uniqueName, structure.builder.buildLocation, listOf(
+                "§r%${structure.uniqueName}_structurename%",
+                "§r",
+                "§f%${structure.uniqueName}_durabilitybar%",
+                "§f",
+            )
+        )
+    }
+
     override fun initialized(e: StructureInitializedEvent) {
 
     }
