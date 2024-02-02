@@ -124,7 +124,7 @@ class Builder(
         status = Status.COMPLETED
         // 抛出事件
         BuilderCompletedEvent(this,structure).call()
-        StructureCompletedEvent(structure)
+        StructureCompletedEvent(structure).call()
     }
     private suspend fun buildCheck() {
         while (true) {
