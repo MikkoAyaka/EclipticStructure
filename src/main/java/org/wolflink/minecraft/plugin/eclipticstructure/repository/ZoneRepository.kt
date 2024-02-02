@@ -29,7 +29,7 @@ object ZoneRepository : ListRepository<Int, Zone>() {
                         && it.maxLocation.z >= zone.minLocation.z
             }
             .filter { it.overlap(zone) } // 互相存在顶点重合
-            .filter { it == zone } // 不为自己
+            .filter { it != zone } // 不为自己
             .toSet()
     }
 }

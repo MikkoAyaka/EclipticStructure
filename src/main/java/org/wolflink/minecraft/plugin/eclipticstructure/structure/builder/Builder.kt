@@ -175,7 +175,7 @@ class Builder(
             val block = world.getBlockAt(location)
             if(block.state is Container) {
                 val container = block.state as Container
-                container.inventory.forEach { world.dropItemNaturally(location,it) }
+                container.inventory.filter { it != null && it.type.isItem }.forEach { world.dropItemNaturally(location,it) }
             }
             block.type = Material.AIR
         }
