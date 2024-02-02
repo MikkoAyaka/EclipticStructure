@@ -3,13 +3,22 @@ package org.wolflink.minecraft.plugin.eclipticstructure.structure
 import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureDestroyedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.call
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
+import java.util.concurrent.atomic.AtomicInteger
 
 abstract class Structure(
-    val blueprint: StructureBlueprint,
-    val builder: StructureBuilder,
-    var maxDurability: Int,// 最大耐久值
+    val blueprint: Blueprint,
+    val builder: Builder,
 ) {
-    var durability = maxDurability
+    companion object {
+        val AUTOMATIC_ID = AtomicInteger(0)
+    }
+    val decorator by lazy { StructureDecorator(this) }
+    val handler by lazy { StructureHandler(this) }
+    val zone = builder.zone
+    val id = AUTOMATIC_ID.getAndIncrement()
+    val uniqueName = "esstructure_$id"
+    var durability = blueprint.maxDurability
     var available = false
 
     /**
@@ -26,7 +35,6 @@ abstract class Structure(
      */
     private fun destroy() {
         available = false
-        StructureRepository.deleteByKey(builder.zone)
         builder.destroy()
         StructureDestroyedEvent(this).call()
     }

@@ -12,10 +12,11 @@ import java.io.FileNotFoundException
  * 存放建筑结构的元数据(未被实例化的数据)
  * @param requiredItems 建筑材料(材质不重复，数量可超过64)
  */
-class StructureBlueprint (
+class Blueprint (
     val structureDisplayName: String,
     val schemFileName: String,
     val buildSeconds: Int,
+    val maxDurability: Int,
     vararg val requiredItems: ItemStack
 ) {
     fun loadClipboard(): Clipboard {

@@ -6,9 +6,11 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.register
 import org.wolflink.minecraft.plugin.eclipticstructure.file.FileFolders
-import org.wolflink.minecraft.plugin.eclipticstructure.papi.ESBuilderPapi
-import org.wolflink.minecraft.plugin.eclipticstructure.structure.StructureBuilderListener
-import org.wolflink.minecraft.plugin.eclipticstructure.structure.StructureDurabilityHandler
+import org.wolflink.minecraft.plugin.eclipticstructure.papi.BuilderPapi
+import org.wolflink.minecraft.plugin.eclipticstructure.papi.StructurePapi
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.BuilderListener
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.StructureDurabilityListener
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.StructureListener
 
 /**
  * 建筑结构库
@@ -26,14 +28,17 @@ class EclipticStructure : JavaPlugin() {
     }
     override fun onEnable() {
         FileFolders.init()
-        ESBuilderPapi.register()
+        BuilderPapi.register()
+        StructurePapi.register()
         // 注册监听器
-        StructureBuilderListener.register(this)
-        StructureDurabilityHandler.register(this)
+        BuilderListener.register(this)
+        StructureDurabilityListener.register(this)
+        StructureListener.register(this)
     }
 
     override fun onDisable() {
         EStructureScope.cancel()
-        ESBuilderPapi.unregister()
+        BuilderPapi.unregister()
+        StructurePapi.unregister()
     }
 }

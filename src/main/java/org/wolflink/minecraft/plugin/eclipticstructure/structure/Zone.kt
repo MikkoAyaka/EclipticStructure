@@ -7,6 +7,7 @@ import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 区域对象
@@ -18,6 +19,7 @@ data class Zone (
     val yRange: IntRange,
     val zRange: IntRange
 ) {
+    val id = AUTOMATIC_ID.getAndIncrement()
     val world: World = Bukkit.getWorld(worldName) ?: throw IllegalArgumentException("未知的世界：$worldName")
     val players: Set<Player>
         get() = Bukkit.getOnlinePlayers().filter { it.location in this }.toSet()
@@ -26,6 +28,7 @@ data class Zone (
     val maxLocation: Location
         get() = Location(Bukkit.getWorld(worldName),xRange.last.toDouble(),yRange.last.toDouble(),zRange.last.toDouble())
     companion object {
+        val AUTOMATIC_ID = AtomicInteger(0)
         //最小点 -465 -60 558
         //最大点 -461 -55 562
         fun create(world: World, relative: Location, clipboard: Clipboard): Zone {

@@ -10,21 +10,26 @@ import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.util.BoundingBox
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureBuilderCompleteEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderCompletedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureDestroyedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
+import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureZoneRelationRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
 import java.util.Random
 
-object StructureDurabilityHandler: Listener {
+object StructureDurabilityListener: Listener {
+
+    // 检查建筑周围存在怪物的半径
+    private const val MONSTER_CHECK_RADIUS = 4.0
+    // 每只怪物对建筑造成的伤害
+    private const val PER_MONSTER_DAMAGE = 30
     private val random = Random()
     @EventHandler
     fun onPlayerBreak(e: BlockBreakEvent) {
-        val structure = ZoneRepository.findByLocation(e.block.location).map(StructureRepository::find).firstOrNull() ?: return
+        val structure = ZoneRepository.findByLocation(e.block.location).map(StructureZoneRelationRepository::find1).firstOrNull() ?: return
         e.isDropItems = false
         e.expToDrop = 0
         e.isCancelled = true
-        structure.doDamage(1.0 / structure.builder.blockAmount * structure.maxDurability,Structure.DamageSource.PLAYER_BREAK)
+        structure.doDamage(1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability,Structure.DamageSource.PLAYER_BREAK)
     }
     private fun onExploration(worldName:String,blockList: List<Block>) {
         var minX: Int = Int.MAX_VALUE;var minY: Int = Int.MAX_VALUE;var minZ: Int = Int.MAX_VALUE
@@ -47,11 +52,11 @@ object StructureDurabilityHandler: Listener {
         // 与爆炸重叠的区域
         ZoneRepository.findByOverlap(zone)
             // 被爆炸影响的建筑结构
-            .map(StructureRepository::find)
+            .map(StructureZoneRelationRepository::find1)
             // 造成 20% ~ 50% 最大耐久值的损害
             .forEach{
                 it.doDamage(
-                    random.nextDouble(0.2,0.5) * it.maxDurability,
+                    random.nextDouble(0.2,0.5) * it.blueprint.maxDurability,
                     Structure.DamageSource.EXPLORATION
                 )
             }
@@ -66,19 +71,15 @@ object StructureDurabilityHandler: Listener {
     }
     // Structure - TaskId
     private val taskMap = mutableMapOf<Structure,Int>()
-    // 检查建筑周围存在怪物的半径
-    private const val MONSTER_CHECK_RADIUS = 4.0
-    // 每只怪物对建筑造成的伤害
-    private const val PER_MONSTER_DAMAGE = 30
     @EventHandler
-    fun onStructureComplete(e: StructureBuilderCompleteEvent) {
-        val zone = e.structureBuilder.zone
+    fun onStructureComplete(e: BuilderCompletedEvent) {
+        val zone = e.builder.zone
         val world = zone.world
         val box = BoundingBox.of(
             zone.minLocation.clone().add(-MONSTER_CHECK_RADIUS,-MONSTER_CHECK_RADIUS,-MONSTER_CHECK_RADIUS),
             zone.maxLocation.clone().add(MONSTER_CHECK_RADIUS,MONSTER_CHECK_RADIUS,MONSTER_CHECK_RADIUS),
         )
-        val structure = StructureRepository.find(zone)
+        val structure = e.structure
         val taskId = Bukkit.getScheduler().runTaskTimerAsynchronously(EclipticStructure.instance, Runnable {
             val monsterAmount = world.getNearbyEntities(box) { it is Monster }.size
             structure.doDamage(monsterAmount * PER_MONSTER_DAMAGE,Structure.DamageSource.MONSTER_OCCUPY)

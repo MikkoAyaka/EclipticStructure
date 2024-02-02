@@ -3,9 +3,9 @@ package org.wolflink.minecraft.plugin.eclipticstructure.event
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
-import org.wolflink.minecraft.plugin.eclipticstructure.structure.StructureBuilder
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
 
-class StructureBuilderStartEvent(val structureBuilder: StructureBuilder,val player: Player): Event() {
+class BuilderStartedEvent(val builder: Builder, val player: Player): Event() {
 
     override fun getHandlers() = handlerList
     companion object {

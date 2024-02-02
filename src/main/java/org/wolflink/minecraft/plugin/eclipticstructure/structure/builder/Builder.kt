@@ -1,4 +1,4 @@
-package org.wolflink.minecraft.plugin.eclipticstructure.structure
+package org.wolflink.minecraft.plugin.eclipticstructure.structure.builder
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter
 import com.sk89q.worldedit.math.BlockVector3
@@ -7,46 +7,44 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.Particle
-import org.bukkit.Sound
 import org.bukkit.block.Container
 import org.bukkit.entity.Player
-import org.bukkit.inventory.InventoryHolder
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_INSUFFICIENT_ITEMS
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_STATUS_ERROR
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_OVERLAP
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureBuilderCompleteEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureBuilderStartEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.extension.RED_DUST_PARTICLE_OPTIONS
+import org.wolflink.minecraft.plugin.eclipticstructure.event.*
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.call
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.getRelative
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.takeItems
-import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureBuilderRepository
-import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
+import org.wolflink.minecraft.plugin.eclipticstructure.repository.BuilderRepository
+import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureZoneRelationRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.registry.StructureRegistry
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.Zone
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 建筑结构 建造者
  * TODO 利用 Bukkit 事件将业务代码分散到事件监听器中，实现面向切面开发
  */
-class StructureBuilder(
+class Builder(
     val structureTypeName: String,
     val buildLocation: Location,
     val pasteAir: Boolean,
 ) {
+    val decorator = BuilderDecorator(this)
     companion object {
         val AUTOMATIC_ID = AtomicInteger(0)
     }
     val id = AUTOMATIC_ID.getAndIncrement()
-    val uniqueName = "StructureBuilder-$id"
+    val uniqueName = "esbuilder-$id"
     init {
-        StructureBuilderRepository.insert(this)
+        BuilderRepository.insert(this)
     }
-    val structureMeta = StructureRegistry.get(structureTypeName) ?: throw NullPointerException("$structureTypeName 未被注册")
+    private val structureMeta = StructureRegistry.get(structureTypeName) ?: throw NullPointerException("$structureTypeName 未被注册")
     val blueprint = structureMeta.blueprint
     private val clipboard = blueprint.loadClipboard()
     private val blockMap = mutableMapOf<BlockVector3,BaseBlock>()
@@ -59,8 +57,8 @@ class StructureBuilder(
     // 方块数量(空气除外)
     val blockAmount = blockMap.filterNot { it.value.material.isAir }.size
     // 建筑占用区域(不可重复)
-    val zone = Zone.create(buildLocation.world,clipboard.getRelative(buildLocation),clipboard)
-
+    val zone = Zone.create(buildLocation.world, clipboard.getRelative(buildLocation), clipboard)
+    private val structure = structureMeta.structureSupplier(this)
     /**
      * 建造状态
      */
@@ -74,9 +72,11 @@ class StructureBuilder(
     }
 
     var status: Status = Status.NOT_STARTED
-
-    // 当前剩余时间
-    private val leftSeconds = blueprint.buildSeconds
+        set(value) {
+            if(value == field) return
+            BuilderStatusEvent(this,field,value).call()
+            field = value
+        }
 
     private fun canBuild(player: Player): Boolean {
         // 状态异常
@@ -103,12 +103,10 @@ class StructureBuilder(
         // 建筑前检查
         if(!canBuild(player)) return
         // 保存建筑结构对象至仓库
-        StructureRepository.insert(structureMeta.structureSupplier(this))
-        // 保存建筑结构区域至仓库
-        ZoneRepository.insert(zone)
+        StructureInitializedEvent(structure).call()
         // 开始建造
         EStructureScope.launch {
-            StructureBuilderStartEvent(this@StructureBuilder,player).call()
+            BuilderStartedEvent(this@Builder,player).call()
             startBuilding()
         }
     }
@@ -116,18 +114,20 @@ class StructureBuilder(
     private var nowIndex = 0
     // 放置每个方块的平均延时毫秒
     private val averageDelayMills: Long = (blueprint.buildSeconds / blockMap.size.toDouble() * 1000).toLong()
-    fun getBuildProgress() = nowIndex.toDouble() / blockMap.size
-    fun getBuildTimeLeft() = blueprint.buildSeconds - (blueprint.buildSeconds * getBuildProgress()).toInt()
+    val buildProgress get() = nowIndex.toDouble() / blockMap.size
+    val buildTimeLeft get() = blueprint.buildSeconds - (blueprint.buildSeconds * buildProgress).toInt()
     private suspend fun startBuilding() {
         status = Status.IN_PROGRESS
-        // 剩余待建造的方块总数
-        val leftBlockCount = blockMap.size - nowIndex
-        // 最小坐标
-        val minLocation = zone.minLocation
-        val bukkitWorld = buildLocation.world
-        // WorldEdit 世界对象
-        val world = BukkitAdapter.adapt(bukkitWorld)
-        // 判断区域是否有足够的空间 并且空间内没有玩家 并且空间有地板支撑
+        // 建筑前检查
+        buildCheck()
+        // 放置方块
+        placeBlocks()
+        status = Status.COMPLETED
+        // 抛出事件
+        BuilderCompletedEvent(this,structure).call()
+        StructureCompletedEvent(StructureZoneRelationRepository.find1(zone))
+    }
+    private suspend fun buildCheck() {
         while (true) {
             if(!zone.isEmpty()) status = Status.ZONE_NOT_EMPTY
             else if(zone.players.isNotEmpty()) status = Status.ZONE_HAS_PLAYER
@@ -136,13 +136,15 @@ class StructureBuilder(
                 status = Status.IN_PROGRESS
                 break
             }
-            zone.display(5) { w, x, y, z ->
-                w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x+0.5,y+0.5,z+0.5, 3, RED_DUST_PARTICLE_OPTIONS); // 30 是粒子的数量
-            }
+            delay(5 * 1000)
         }
+    }
+    private suspend fun placeBlocks() {
+        val minLocation = zone.minLocation
         val list = blockMap.toList()
-        // 放置方块
-        while (nowIndex++ < leftBlockCount - 1) {
+        val bukkitWorld = minLocation.world
+        val weWorld = BukkitAdapter.adapt(bukkitWorld)
+        while (nowIndex++ < blockMap.size - 1) {
             val pair = list[nowIndex]
             val blockVector = pair.first
             val fullBlock = pair.second
@@ -155,13 +157,11 @@ class StructureBuilder(
             val material = BukkitAdapter.adapt(fullBlock)
             EclipticStructure.runTask {
                 // 放置方块
-                world.setBlock(x, y, z, fullBlock.toBlockState())
+                weWorld.setBlock(x, y, z, fullBlock.toBlockState())
                 // 播放方块放置音效
                 bukkitWorld.playSound(Location(bukkitWorld,x.toDouble(),y.toDouble(),z.toDouble()),material.soundGroup.placeSound,1f,1f)
             }
         }
-        status = Status.COMPLETED
-        StructureBuilderCompleteEvent(this).call()
     }
 
     /**
@@ -171,8 +171,6 @@ class StructureBuilder(
      * 删除建筑结构和建造者等引用，建筑被摧毁后无法恢复
      */
     fun destroy() {
-        StructureBuilderRepository.deleteByKey(id)
-        ZoneRepository.deleteByValue(zone)
         zone.forEach { world, x, y, z ->
             val location = Location(world,x.toDouble(),y.toDouble(),z.toDouble())
             val block = world.getBlockAt(location)
@@ -182,7 +180,6 @@ class StructureBuilder(
             }
             block.type = Material.AIR
         }
-        buildLocation.world.playSound(buildLocation, Sound.BLOCK_BEACON_DEACTIVATE,2f,1f)
-        buildLocation.world.playSound(buildLocation, Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST,2f,0.6f)
+        BuilderDestroyedEvent(this).call()
     }
 }

@@ -2,11 +2,10 @@ package org.wolflink.minecraft.plugin.eclipticstructure.papi
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import org.bukkit.OfflinePlayer
-import org.wolflink.minecraft.plugin.eclipticstructure.display.TextProgressBar
-import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureBuilderRepository
-import org.wolflink.minecraft.plugin.eclipticstructure.structure.StructureBuilder
+import org.wolflink.minecraft.plugin.eclipticstructure.display.BuildProgressBar
+import org.wolflink.minecraft.plugin.eclipticstructure.repository.BuilderRepository
 
-object ESBuilderPapi: PlaceholderExpansion() {
+object BuilderPapi: PlaceholderExpansion() {
     override fun getIdentifier() = "esbuilder"
 
     override fun getAuthor() = "MikkoAyaka"
@@ -17,15 +16,15 @@ object ESBuilderPapi: PlaceholderExpansion() {
     override fun onRequest(player: OfflinePlayer?, params: String): String {
         val args = params.split("_")
         val builderId = args.getOrNull(0)?.toIntOrNull() ?: return ""
-        val structureBuilder = StructureBuilderRepository.find(builderId) ?: return ""
+        val structureBuilder = BuilderRepository.find(builderId) ?: return ""
         if(args.getOrNull(1) == "status") {
             return structureBuilder.status.msg
         }
         if(args.getOrNull(1) == "progress") {
-            return TextProgressBar(structureBuilder.getBuildProgress()).getBar()
+            return BuildProgressBar(structureBuilder.buildProgress).getBar()
         }
         if(args.getOrNull(1) == "timeleft") {
-            return "${structureBuilder.getBuildTimeLeft()} 秒"
+            return "${structureBuilder.buildTimeLeft} 秒"
         }
         if(args.getOrNull(1) == "structurename") {
             return structureBuilder.blueprint.structureDisplayName
