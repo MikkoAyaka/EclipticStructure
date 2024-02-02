@@ -63,11 +63,13 @@ object StructureDurabilityListener: Listener {
     }
     @EventHandler
     fun onExploration(e: BlockExplodeEvent) {
-        onExploration(e.block.location.world.name,e.blockList())
+        onExploration(e.block.location.world.name,e.blockList().toList())
+        e.blockList().clear()
     }
     @EventHandler
     fun onExploration(e: EntityExplodeEvent) {
-        onExploration(e.entity.location.world.name,e.blockList())
+        onExploration(e.entity.location.world.name,e.blockList().toList())
+        e.blockList().clear()
     }
     // Structure - TaskId
     private val taskMap = mutableMapOf<Structure,Int>()

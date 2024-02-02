@@ -10,11 +10,9 @@ import org.wolflink.minecraft.plugin.eclipticstructure.extension.toHexString
  */
 class DurabilityBar(var progress: Double, private val length: Int = 20) {
     fun getBar():String {
-        val color = Color.fromRGB(
-            ((1 - progress) * 255).toInt(),
-            (progress * 255).toInt(),
-            0
-        )
+        val color =
+            if(progress > 0.5) Color.fromRGB((510 * (1 - progress)).toInt(), 255, 0)
+            else Color.fromRGB(255, (progress * 510).toInt(),0)
         var bar = ""
         val finished = (progress * length).toInt()
         val notFinished = length - finished
