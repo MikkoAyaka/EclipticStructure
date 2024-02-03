@@ -1,5 +1,7 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
+import org.bukkit.Bukkit
+import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureAvailableEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureDestroyedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureDurabilityDamageEvent
@@ -55,11 +57,15 @@ abstract class Structure(
         doDamage(damage.toInt(),sourceType,source)
     }
     fun doDamage(damage: Int, sourceType: DamageSource,source: Any) {
-        val event = StructureDurabilityDamageEvent(this,sourceType,source,damage).apply { call() }
-        if(event.isCancelled) return
-        durability -= (damage * event.damageMultiple).toInt()
-        if(durability <= 0) {
-            destroy()
+        EclipticStructure.runTask {
+            val event = StructureDurabilityDamageEvent(this,sourceType,source,damage)
+            Bukkit.getPluginManager().callEvent(event)
+            if(event.isCancelled) return@runTask
+            durability -= (damage * event.damageMultiple).toInt()
+            if(durability <= 0) {
+                durability = 0
+                destroy()
+            }
         }
     }
 }
