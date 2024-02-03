@@ -37,8 +37,8 @@ class EclipticStructure : JavaPlugin() {
     }
 
     override fun onDisable() {
-        EStructureScope.cancel()
         BuilderPapi.unregister()
         StructurePapi.unregister()
+        EStructureScope.cancel()
     }
 }

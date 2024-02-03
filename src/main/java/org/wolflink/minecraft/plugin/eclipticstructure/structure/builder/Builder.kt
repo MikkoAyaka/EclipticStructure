@@ -36,9 +36,10 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class Builder(
     val structureTypeName: String,
-    val buildLocation: Location,
+    buildLocation: Location,
     val pasteAir: Boolean,
 ) {
+    val buildLocation = buildLocation.toCenterLocation()
     val decorator = BuilderDecorator(this)
     companion object {
         val AUTOMATIC_ID = AtomicInteger(0)
