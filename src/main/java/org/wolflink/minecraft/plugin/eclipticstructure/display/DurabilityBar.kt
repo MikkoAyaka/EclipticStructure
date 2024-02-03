@@ -1,7 +1,7 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.display
 
 import org.bukkit.Color
-import org.wolflink.minecraft.plugin.eclipticstructure.extension.toHexString
+import org.wolflink.minecraft.plugin.eclipticstructure.extension.toHex
 
 /**
  * 耐久进度条
@@ -16,7 +16,7 @@ class DurabilityBar(var progress: Double, private val length: Int = 20) {
         var bar = ""
         val finished = (progress * length).toInt()
         val notFinished = length - finished
-        bar += "#${color.toHexString()}"
+        bar += "#${color.toHex()}"
         repeat(finished) { bar += '░' }
         bar += "§7"
         repeat(notFinished) { bar += '░' }

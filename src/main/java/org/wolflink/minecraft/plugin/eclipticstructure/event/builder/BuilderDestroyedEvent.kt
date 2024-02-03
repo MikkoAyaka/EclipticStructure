@@ -1,4 +1,4 @@
-package org.wolflink.minecraft.plugin.eclipticstructure.event
+package org.wolflink.minecraft.plugin.eclipticstructure.event.builder
 
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList

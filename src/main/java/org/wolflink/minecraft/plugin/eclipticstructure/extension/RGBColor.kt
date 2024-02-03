@@ -9,7 +9,11 @@ val GREEN_COLOR: Color = Color.fromRGB(128,255,128) // 绿色
 val DEEP_GREEN_COLOR: Color = Color.fromRGB(0,255,0) // 深绿色
 
 private val HEX_CODE = arrayOf('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F')
-fun Color.toHexString(): String {
+
+/**
+ * 将颜色对象转为例如 AFAF00 的十六进制颜色字符
+ */
+fun Color.toHex(): String {
     val chars = arrayOf('0','0','0','0','0','0')
     chars[0] = HEX_CODE[red / 16]
     chars[1] = HEX_CODE[red % 16]

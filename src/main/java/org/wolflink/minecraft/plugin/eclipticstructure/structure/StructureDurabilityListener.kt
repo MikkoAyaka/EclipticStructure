@@ -10,8 +10,8 @@ import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.util.BoundingBox
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
-import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderCompletedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureDestroyedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderCompletedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureDestroyedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureZoneRelationRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
 import java.util.Random
@@ -29,9 +29,13 @@ object StructureDurabilityListener: Listener {
         e.isDropItems = false
         e.expToDrop = 0
         e.isCancelled = true
-        structure.doDamage(1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability,Structure.DamageSource.PLAYER_BREAK)
+        structure.doDamage(
+            1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability,
+            Structure.DamageSource.PLAYER_BREAK,
+            e.player
+        )
     }
-    private fun onExploration(worldName:String,blockList: List<Block>) {
+    private fun onExploration(source: Any,worldName:String,blockList: List<Block>) {
         var minX: Int = Int.MAX_VALUE;var minY: Int = Int.MAX_VALUE;var minZ: Int = Int.MAX_VALUE
         var maxX: Int = Int.MIN_VALUE;var maxY: Int = Int.MIN_VALUE;var maxZ: Int = Int.MIN_VALUE
         blockList.map { it.location }.forEach {
@@ -57,18 +61,19 @@ object StructureDurabilityListener: Listener {
             .forEach{
                 it.doDamage(
                     random.nextDouble(0.2,0.5) * it.blueprint.maxDurability,
-                    Structure.DamageSource.EXPLORATION
+                    Structure.DamageSource.EXPLORATION,
+                    source
                 )
             }
     }
     @EventHandler
     fun onExploration(e: BlockExplodeEvent) {
-        onExploration(e.block.location.world.name,e.blockList().toList())
+        onExploration(e.block,e.block.location.world.name,e.blockList().toList())
         e.blockList().clear()
     }
     @EventHandler
     fun onExploration(e: EntityExplodeEvent) {
-        onExploration(e.entity.location.world.name,e.blockList().toList())
+        onExploration(e.entity,e.entity.location.world.name,e.blockList().toList())
         e.blockList().clear()
     }
     // Structure - TaskId
@@ -83,8 +88,9 @@ object StructureDurabilityListener: Listener {
         )
         val structure = e.structure
         val taskId = Bukkit.getScheduler().runTaskTimer(EclipticStructure.instance, Runnable {
-            val monsterAmount = world.getNearbyEntities(box) { it is Monster }.size
-            structure.doDamage(monsterAmount * PER_MONSTER_DAMAGE,Structure.DamageSource.MONSTER_OCCUPY)
+            val monsters = world.getNearbyEntities(box) { it is Monster }.toList()
+            val monsterAmount = monsters.size
+            structure.doDamage(monsterAmount * PER_MONSTER_DAMAGE,Structure.DamageSource.MONSTER_OCCUPY,monsters)
         },20L,20L).taskId
         taskMap[structure] = taskId
     }

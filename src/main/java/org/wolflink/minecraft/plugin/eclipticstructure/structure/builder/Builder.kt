@@ -15,12 +15,16 @@ import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_STATUS_ERROR
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_OVERLAP
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
-import org.wolflink.minecraft.plugin.eclipticstructure.event.*
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderCompletedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderDestroyedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStartedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStatusEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureCompletedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureInitializedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.call
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.getRelative
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.takeItems
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.BuilderRepository
-import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureZoneRelationRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.registry.StructureRegistry
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.Zone
@@ -125,6 +129,7 @@ class Builder(
         // 抛出事件
         BuilderCompletedEvent(this,structure).call()
         StructureCompletedEvent(structure).call()
+        structure.available = true
     }
     private suspend fun buildCheck() {
         while (true) {

@@ -1,9 +1,9 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure.builder
 
-import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderCompletedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderDestroyedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderStartedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderStatusEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderCompletedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderDestroyedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStartedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStatusEvent
 
 interface IBuilderListener {
     fun completed(e: BuilderCompletedEvent)

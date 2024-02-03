@@ -1,8 +1,6 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureCompletedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureDestroyedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureInitializedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.*
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureZoneRelationRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository

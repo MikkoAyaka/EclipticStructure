@@ -1,14 +1,11 @@
-package org.wolflink.minecraft.plugin.eclipticstructure.event
+package org.wolflink.minecraft.plugin.eclipticstructure.event.builder
 
+import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
 
-class BuilderStatusEvent(
-    val builder: Builder,
-    val from: Builder.Status,
-    val to: Builder.Status
-): Event() {
+class BuilderStartedEvent(val builder: Builder, val player: Player): Event() {
 
     override fun getHandlers() = handlerList
     companion object {

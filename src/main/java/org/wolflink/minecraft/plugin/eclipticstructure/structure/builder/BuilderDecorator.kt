@@ -9,10 +9,10 @@ import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_START_BUILDING
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
 import org.wolflink.minecraft.plugin.eclipticstructure.display.ESHologram
-import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderCompletedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderDestroyedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderStartedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.BuilderStatusEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderCompletedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderDestroyedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStartedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStatusEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.GREEN_DUST_PARTICLE_OPTIONS
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.RED_DUST_PARTICLE_OPTIONS
 

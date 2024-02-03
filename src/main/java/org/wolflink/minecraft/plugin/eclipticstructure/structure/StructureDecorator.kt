@@ -1,9 +1,9 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
 import org.wolflink.minecraft.plugin.eclipticstructure.display.ESHologram
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureCompletedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureDestroyedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.StructureInitializedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureCompletedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureDestroyedEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureInitializedEvent
 
 class StructureDecorator(val structure: Structure) : IStructureListener {
     private val hologram by lazy {
@@ -16,11 +16,6 @@ class StructureDecorator(val structure: Structure) : IStructureListener {
             )
         )
     }
-
-    override fun initialized(e: StructureInitializedEvent) {
-
-    }
-
     override fun completed(e: StructureCompletedEvent) {
         hologram.create()
     }

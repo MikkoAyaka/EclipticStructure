@@ -1,11 +1,10 @@
-package org.wolflink.minecraft.plugin.eclipticstructure.event
+package org.wolflink.minecraft.plugin.eclipticstructure.event.structure
 
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.Structure
-import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
 
-class BuilderCompletedEvent(val builder: Builder,val structure: Structure): Event() {
+class StructureDestroyedEvent(val structure: Structure): Event() {
 
     override fun getHandlers() = handlerList
     companion object {
