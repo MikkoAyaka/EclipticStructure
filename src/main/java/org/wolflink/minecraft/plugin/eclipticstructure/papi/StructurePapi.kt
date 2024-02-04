@@ -2,7 +2,6 @@ package org.wolflink.minecraft.plugin.eclipticstructure.papi
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import org.bukkit.OfflinePlayer
-import org.wolflink.minecraft.plugin.eclipticstructure.display.BuildProgressBar
 import org.wolflink.minecraft.plugin.eclipticstructure.display.DurabilityBar
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
 
@@ -24,7 +23,7 @@ object StructurePapi: PlaceholderExpansion() {
             return bar.getBar()
         }
         if(args.getOrNull(1) == "structurename") {
-            return structure.blueprint.structureDisplayName
+            return structure.blueprint.structureName
         }
         return ""
     }

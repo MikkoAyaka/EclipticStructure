@@ -27,7 +27,7 @@ object BuilderPapi: PlaceholderExpansion() {
             return "${structureBuilder.buildTimeLeft} 秒"
         }
         if(args.getOrNull(1) == "structurename") {
-            return structureBuilder.blueprint.structureDisplayName
+            return structureBuilder.blueprint.structureName
         }
         return ""
     }

@@ -35,9 +35,10 @@ import java.util.concurrent.atomic.AtomicInteger
  * TODO 利用 Bukkit 事件将业务代码分散到事件监听器中，实现面向切面开发
  */
 class Builder(
-    val structureTypeName: String,
+    private val structureLevel: Int,
+    private val structureTypeName: String,
     buildLocation: Location,
-    val pasteAir: Boolean,
+    private val pasteAir: Boolean,
 ) {
     val buildLocation = buildLocation.toCenterLocation()
     val decorator = BuilderDecorator(this)
@@ -50,7 +51,7 @@ class Builder(
         BuilderRepository.insert(this)
     }
     private val structureMeta = StructureRegistry.get(structureTypeName) ?: throw NullPointerException("$structureTypeName 未被注册")
-    val blueprint = structureMeta.blueprint
+    val blueprint = structureMeta.blueprints[structureLevel]
     private val clipboard = blueprint.loadClipboard()
     private val blockMap = mutableMapOf<BlockVector3,BaseBlock>()
     init {
@@ -63,7 +64,7 @@ class Builder(
     val blockAmount = blockMap.filterNot { it.value.material.isAir }.size
     // 建筑占用区域(不可重复)
     val zone = Zone.create(buildLocation.world, clipboard.getRelative(buildLocation), clipboard)
-    private val structure = structureMeta.structureSupplier(this)
+    private val structure by lazy { structureMeta.structureSupplier(structureLevel,this) }
     /**
      * 建造状态
      */

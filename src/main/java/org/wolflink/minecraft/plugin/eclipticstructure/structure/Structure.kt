@@ -24,6 +24,7 @@ abstract class Structure(
     val id = AUTOMATIC_ID.getAndIncrement()
     val uniqueName = "esstructure_$id"
     var durability = blueprint.maxDurability
+        private set
     var available = false
         set(value) {
             if(value == field) return
@@ -39,6 +40,7 @@ abstract class Structure(
         PLAYER_BREAK,// 玩家破坏
         EXPLORATION,// 爆炸
         MONSTER_OCCUPY,// 怪物占领
+        LACK_OF_ENERGY// 能源不足
     }
 
     /**

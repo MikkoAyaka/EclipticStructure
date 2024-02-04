@@ -11,8 +11,8 @@ object StructureRegistry {
     fun forEach(block: (structureRegistryItem: StructureRegistryItem)->Unit) {
         structureRegistryItems.forEach(block)
     }
-    fun register(plugin: Plugin, structureTypeName: String, blueprint: Blueprint, structureSupplier:(Builder)-> Structure) {
-        val structureRegistryItem = StructureRegistryItem(plugin,structureTypeName,blueprint,structureSupplier)
+    fun register(plugin: Plugin, structureTypeName: String, blueprints: List<Blueprint>, structureSupplier:(Int,Builder)-> Structure) {
+        val structureRegistryItem = StructureRegistryItem(plugin,structureTypeName,blueprints,structureSupplier)
         if(contains(structureTypeName)) {
             logger.warning("$structureTypeName 该建筑结构名已经被 ${plugin.name} 插件注册了，无法重复注册，请更改结构名称")
         } else structureRegistryItems.add(structureRegistryItem)

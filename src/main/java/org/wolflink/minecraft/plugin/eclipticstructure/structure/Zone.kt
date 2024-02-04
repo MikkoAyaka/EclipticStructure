@@ -6,8 +6,12 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
+import org.wolflink.minecraft.plugin.eclipticstructure.config.WORLD_MAX_HEIGHT
+import org.wolflink.minecraft.plugin.eclipticstructure.config.WORLD_MIN_HEIGHT
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * 区域对象
@@ -24,9 +28,11 @@ data class Zone (
     val players: Set<Player>
         get() = Bukkit.getOnlinePlayers().filter { it.location in this }.toSet()
     val minLocation: Location
-        get() = Location(Bukkit.getWorld(worldName),xRange.first.toDouble(),yRange.first.toDouble(),zRange.first.toDouble())
+        get() = Location(Bukkit.getWorld(worldName),xRange.first.toDouble(),
+            max(yRange.first, WORLD_MIN_HEIGHT).toDouble(),zRange.first.toDouble())
     val maxLocation: Location
-        get() = Location(Bukkit.getWorld(worldName),xRange.last.toDouble(),yRange.last.toDouble(),zRange.last.toDouble())
+        get() = Location(Bukkit.getWorld(worldName),xRange.last.toDouble(),
+            min(yRange.last, WORLD_MAX_HEIGHT).toDouble(),zRange.last.toDouble())
     companion object {
         val AUTOMATIC_ID = AtomicInteger(0)
         //最小点 -465 -60 558
