@@ -32,6 +32,8 @@ abstract class Structure(
             else StructureUnavailableEvent(this).call()
             field = value
         }
+    var destroyed = false
+        private set
 
     /**
      * 建筑受到损伤的伤害来源
@@ -48,6 +50,7 @@ abstract class Structure(
      */
     private fun destroy() {
         available = false
+        destroyed = true
         builder.destroy()
         StructureDestroyedEvent(this).call()
     }
