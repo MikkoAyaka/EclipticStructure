@@ -23,3 +23,8 @@ fun Color.toHex(): String {
     chars[5] = HEX_CODE[blue % 16]
     return chars.joinToString(separator = "")
 }
+
+/**
+ * 转换为 MiniMessage API 的颜色格式，如 <#00FF35>
+ */
+fun Color.toHexFormat(): String = "<#${this.toHex()}>"
