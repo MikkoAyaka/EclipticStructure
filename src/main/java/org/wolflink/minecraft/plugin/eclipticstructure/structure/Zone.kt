@@ -103,7 +103,24 @@ data class Zone (
      */
     suspend fun display(durationInSeconds: Int, spawnParticle: (world:World, x:Double, y:Double, z:Double)->Unit) {
         repeat(durationInSeconds) {
-            forEach { world, x, y, z -> spawnParticle(world,x.toDouble(),y.toDouble(),z.toDouble()) }
+            for (x in xRange) {
+                spawnParticle(world,x.toDouble(),minLocation.y,minLocation.z)
+                spawnParticle(world,x.toDouble(),minLocation.y,maxLocation.z)
+                spawnParticle(world,x.toDouble(),maxLocation.y,minLocation.z)
+                spawnParticle(world,x.toDouble(),maxLocation.y,maxLocation.z)
+            }
+            for (y in yRange) {
+                spawnParticle(world,minLocation.x,y.toDouble(),minLocation.z)
+                spawnParticle(world,minLocation.x,y.toDouble(),maxLocation.z)
+                spawnParticle(world,maxLocation.x,y.toDouble(),minLocation.z)
+                spawnParticle(world,maxLocation.x,y.toDouble(),maxLocation.z)
+            }
+            for (z in zRange) {
+                spawnParticle(world,minLocation.x,minLocation.y,z.toDouble())
+                spawnParticle(world,minLocation.x,maxLocation.y,z.toDouble())
+                spawnParticle(world,maxLocation.x,minLocation.y,z.toDouble())
+                spawnParticle(world,maxLocation.x,maxLocation.y,z.toDouble())
+            }
             delay(1000)
         }
     }
