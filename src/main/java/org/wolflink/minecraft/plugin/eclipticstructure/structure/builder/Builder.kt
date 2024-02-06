@@ -51,7 +51,7 @@ class Builder(
         BuilderRepository.insert(this)
     }
     private val structureMeta = StructureRegistry.get(structureTypeName) ?: throw NullPointerException("$structureTypeName 未被注册")
-    val blueprint = structureMeta.blueprints[structureLevel]
+    val blueprint = structureMeta.blueprints[structureLevel-1]
     private val clipboard = blueprint.loadClipboard()
     private val blockMap = mutableMapOf<BlockVector3,BaseBlock>()
     init {
