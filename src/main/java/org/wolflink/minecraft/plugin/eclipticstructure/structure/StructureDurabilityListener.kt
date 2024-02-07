@@ -2,6 +2,7 @@ package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
 import org.bukkit.Bukkit
 import org.bukkit.block.Block
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Monster
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -14,6 +15,7 @@ import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderComp
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureDestroyedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureZoneRelationRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
 import java.util.Random
 
 object StructureDurabilityListener: Listener {
@@ -26,6 +28,7 @@ object StructureDurabilityListener: Listener {
     @EventHandler
     fun onPlayerBreak(e: BlockBreakEvent) {
         val structure = ZoneRepository.findByLocation(e.block.location).map(StructureZoneRelationRepository::find1).firstOrNull() ?: return
+        if(structure.builder.status != Builder.Status.COMPLETED) return
         e.isDropItems = false
         e.expToDrop = 0
         e.isCancelled = true
@@ -57,6 +60,8 @@ object StructureDurabilityListener: Listener {
         ZoneRepository.findByOverlap(zone)
             // 被爆炸影响的建筑结构
             .map(StructureZoneRelationRepository::find1)
+            // 建造完成的建筑结构
+            .filter { it.builder.status == Builder.Status.COMPLETED }
             // 造成 20% ~ 50% 最大耐久值的损害
             .forEach{
                 it.doDamage(
@@ -88,7 +93,7 @@ object StructureDurabilityListener: Listener {
         )
         val structure = e.structure
         val taskId = Bukkit.getScheduler().runTaskTimer(EclipticStructure.instance, Runnable {
-            val monsters = world.getNearbyEntities(box) { it is Monster }.toList()
+            val monsters = world.getNearbyEntities(box) { it is Monster }.filter { (it as LivingEntity).hasAI() }.toList()
             val monsterAmount = monsters.size
             structure.doDamage(monsterAmount * PER_MONSTER_DAMAGE,Structure.DamageSource.MONSTER_OCCUPY,monsters)
         },20L,20L).taskId
