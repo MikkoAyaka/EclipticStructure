@@ -52,7 +52,7 @@ class BuilderDecorator(private val builder: Builder) : IBuilderListener {
                     x + 0.5,
                     y + 0.5,
                     z + 0.5,
-                    3,
+                    1,
                     GREEN_DUST_PARTICLE_OPTIONS
                 ); // 30 是粒子的数量
             }
@@ -75,7 +75,7 @@ class BuilderDecorator(private val builder: Builder) : IBuilderListener {
                     x + 0.5,
                     y + 0.5,
                     z + 0.5,
-                    3,
+                    1,
                     RED_DUST_PARTICLE_OPTIONS
                 ); // 30 是粒子的数量
             }
