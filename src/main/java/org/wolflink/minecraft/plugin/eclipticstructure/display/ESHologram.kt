@@ -21,7 +21,9 @@ class ESHologram(val uniqueName: String,val location: Location,val lines: List<S
         while (hologram?.isEnabled == true) {
             val tempHologram = hologram ?: break
             if(tempHologram.location.clone().add(0.0,-1.0,0.0).block.isSolid
-                || tempHologram.location.clone().add(0.0,-2.0,0.0).block.isSolid) {
+                || tempHologram.location.clone().add(0.0,-2.0,0.0).block.isSolid
+                || tempHologram.location.clone().add(0.0,-3.0,0.0).block.isSolid
+                ) {
                 DHAPI.moveHologram(tempHologram,tempHologram.location.clone().add(0.0,1.0,0.0))
             }
             delay(1000L)
