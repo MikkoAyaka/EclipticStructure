@@ -8,7 +8,9 @@ import kotlinx.coroutines.launch
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Container
+import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_INSUFFICIENT_ITEMS
@@ -177,15 +179,26 @@ class Builder(
      * 删除建筑结构和建造者等引用，建筑被摧毁后无法恢复
      */
     fun destroy() {
+        val items = mutableSetOf<Pair<Location,ItemStack>>()
+        // 清理方块
         zone.forEach { world, x, y, z ->
             val location = Location(world,x.toDouble(),y.toDouble(),z.toDouble())
             val block = world.getBlockAt(location)
             if(block.state is Container) {
                 val container = block.state as Container
-                container.inventory.filter { it != null && it.type.isItem }.forEach { world.dropItemNaturally(location,it) }
+                container.inventory.filter { it != null && it.type.isItem }.forEach {
+                    // 延迟掉落
+                    items.add(location to it)
+                }
             }
             block.type = Material.AIR
         }
+        // 删除建筑本身的掉落物
+        zone.world.getNearbyEntities(zone.toBoundingBox()) {
+            it.type == EntityType.DROPPED_ITEM
+        }
+        // 掉落应该掉落的物品
+        items.forEach { zone.world.dropItemNaturally(it.first,it.second) }
         BuilderDestroyedEvent(this).call()
     }
 }

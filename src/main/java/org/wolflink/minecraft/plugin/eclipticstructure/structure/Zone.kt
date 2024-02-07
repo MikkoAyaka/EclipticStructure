@@ -6,6 +6,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
+import org.bukkit.util.BoundingBox
 import org.wolflink.minecraft.plugin.eclipticstructure.config.WORLD_MAX_HEIGHT
 import org.wolflink.minecraft.plugin.eclipticstructure.config.WORLD_MIN_HEIGHT
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
@@ -174,4 +175,5 @@ data class Zone (
     fun overlap(another:Zone): Boolean {
         return getVertex().any { it in another } || another.getVertex().any{ it in this }
     }
+    fun toBoundingBox() = BoundingBox.of(minLocation,maxLocation)
 }

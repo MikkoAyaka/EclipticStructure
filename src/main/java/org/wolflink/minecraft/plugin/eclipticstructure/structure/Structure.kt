@@ -1,6 +1,8 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
 import org.bukkit.Bukkit
+import org.bukkit.entity.EntityType
+import org.bukkit.util.BoundingBox
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureAvailableEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureDestroyedEvent
