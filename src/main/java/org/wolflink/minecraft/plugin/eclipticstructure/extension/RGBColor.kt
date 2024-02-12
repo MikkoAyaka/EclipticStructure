@@ -24,6 +24,17 @@ fun Color.toHex(): String {
     return chars.joinToString(separator = "")
 }
 
+infix fun Pair<Color,Color>.ofGradient(percent: Double): Color {
+    val startColor = this.first
+    val endColor = this.second
+
+    val newRed = (startColor.red + (endColor.red - startColor.red) * percent).toInt()
+    val newGreen = (startColor.green + (endColor.green - startColor.green) * percent).toInt()
+    val newBlue = (startColor.blue + (endColor.blue - startColor.blue) * percent).toInt()
+
+    return Color.fromRGB(newRed, newGreen, newBlue)
+}
+
 /**
  * 转换为 MiniMessage API 的颜色格式，如 <#00FF35>
  */
