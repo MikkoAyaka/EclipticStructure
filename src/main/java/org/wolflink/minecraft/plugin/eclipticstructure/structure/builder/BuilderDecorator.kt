@@ -68,7 +68,7 @@ class BuilderDecorator(private val builder: Builder) : IBuilderListener {
     }
 
     private suspend fun onCheckFailed() {
-        while (builder.status != Builder.Status.IN_PROGRESS) {
+        while (builder.status != Builder.Status.IN_PROGRESS && builder.status != Builder.Status.COMPLETED) {
             builder.zone.display(1) { w, x, y, z ->
                 w.spawnParticle(
                     Particle.DUST_COLOR_TRANSITION,
