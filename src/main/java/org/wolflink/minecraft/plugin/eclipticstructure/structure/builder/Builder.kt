@@ -30,6 +30,7 @@ import org.wolflink.minecraft.plugin.eclipticstructure.repository.BuilderReposit
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.registry.StructureRegistry
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.Zone
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.registry.StructureRegistryItem
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -38,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class Builder(
     private val structureLevel: Int,
-    private val structureTypeName: String,
+    structureMeta: StructureRegistryItem,
     buildLocation: Location,
     private val pasteAir: Boolean,
 ) {
@@ -52,7 +53,6 @@ class Builder(
     init {
         BuilderRepository.insert(this)
     }
-    private val structureMeta = StructureRegistry.get(structureTypeName) ?: throw NullPointerException("$structureTypeName 未被注册")
     val blueprint = structureMeta.blueprints[structureLevel-1]
     private val clipboard = blueprint.loadClipboard()
     private val blockMap = mutableMapOf<BlockVector3,BaseBlock>()
@@ -86,15 +86,10 @@ class Builder(
             field = value
         }
 
-    private fun canBuild(player: Player): Boolean {
+    fun canBuild(player: Player): Boolean {
         // 状态异常
         if (status != Status.NOT_STARTED) {
             player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR)
-            return false
-        }
-        // 玩家缺少足够的材料
-        if (!player.takeItems(*blueprint.requiredItems)) {
-            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_INSUFFICIENT_ITEMS)
             return false
         }
         // 空间存在重叠

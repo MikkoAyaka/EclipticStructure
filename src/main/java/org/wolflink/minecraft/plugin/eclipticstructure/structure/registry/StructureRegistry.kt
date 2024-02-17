@@ -2,7 +2,7 @@ package org.wolflink.minecraft.plugin.eclipticstructure.structure.registry
 
 import org.bukkit.plugin.Plugin
 import org.wolflink.minecraft.plugin.eclipticstructure.logger
-import org.wolflink.minecraft.plugin.eclipticstructure.structure.Blueprint
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.blueprint.Blueprint
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.Structure
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
 
@@ -11,7 +11,7 @@ object StructureRegistry {
     fun forEach(block: (structureRegistryItem: StructureRegistryItem)->Unit) {
         structureRegistryItems.forEach(block)
     }
-    fun register(plugin: Plugin, structureTypeName: String, blueprints: List<Blueprint>, structureSupplier:(Int,Builder)-> Structure) {
+    fun register(plugin: Plugin, structureTypeName: String, blueprints: List<Blueprint>, structureSupplier:(Int, Builder)-> Structure) {
         val structureRegistryItem = StructureRegistryItem(plugin,structureTypeName,blueprints,structureSupplier)
         if(contains(structureTypeName)) {
             logger.warning("$structureTypeName 该建筑结构名已经被 ${plugin.name} 插件注册了，无法重复注册，请更改结构名称")
@@ -29,7 +29,7 @@ object StructureRegistry {
             logger.warning("$structureTypeName 建筑结构不存在于注册列表中，无法取消注册")
         } else structureRegistryItems.remove(structureRegistryItem)
     }
-    fun get(structureTypeName: String) = structureRegistryItems.firstOrNull { it.structureTypeName == structureTypeName }
+    fun get(structureTypeName: String) = structureRegistryItems.firstOrNull { it.structureTypeName == structureTypeName } ?: throw NullPointerException("$structureTypeName 未被注册")
     fun contains(structureRegistryItem: StructureRegistryItem) = structureRegistryItems.contains(structureRegistryItem)
     fun contains(structureTypeName: String) = structureRegistryItems.map { it.structureTypeName.uppercase() }.contains(structureTypeName.uppercase())
 }

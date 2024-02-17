@@ -1,14 +1,13 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
 import org.bukkit.Bukkit
-import org.bukkit.entity.EntityType
-import org.bukkit.util.BoundingBox
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureAvailableEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureDestroyedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureDurabilityDamageEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureUnavailableEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.call
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.blueprint.Blueprint
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
 import java.util.concurrent.atomic.AtomicInteger
 

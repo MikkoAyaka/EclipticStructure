@@ -1,4 +1,4 @@
-package org.wolflink.minecraft.plugin.eclipticstructure.structure
+package org.wolflink.minecraft.plugin.eclipticstructure.structure.blueprint
 
 import com.sk89q.worldedit.extent.clipboard.Clipboard
 import org.bukkit.inventory.ItemStack
@@ -16,8 +16,7 @@ open class Blueprint (
     private val structureLevel: Int,
     val structureName: String,
     val buildSeconds: Int,
-    val maxDurability: Int,
-    vararg val requiredItems: ItemStack
+    val maxDurability: Int
 ) {
     fun loadClipboard(): Clipboard {
         val schemFile = File(FileFolders.schemFolder, "$structureName-$structureLevel.schem")

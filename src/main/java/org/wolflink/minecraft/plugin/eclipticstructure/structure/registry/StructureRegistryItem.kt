@@ -1,7 +1,7 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure.registry
 
 import org.bukkit.plugin.Plugin
-import org.wolflink.minecraft.plugin.eclipticstructure.structure.Blueprint
+import org.wolflink.minecraft.plugin.eclipticstructure.structure.blueprint.Blueprint
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.Structure
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
 
