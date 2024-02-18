@@ -191,7 +191,7 @@ class Builder(
         // 删除建筑本身的掉落物
         zone.world.getNearbyEntities(zone.toBoundingBox()) {
             it.type == EntityType.DROPPED_ITEM
-        }
+        }.forEach { it.remove() }
         // 掉落应该掉落的物品
         items.forEach { zone.world.dropItemNaturally(it.first,it.second) }
         BuilderDestroyedEvent(this).call()
