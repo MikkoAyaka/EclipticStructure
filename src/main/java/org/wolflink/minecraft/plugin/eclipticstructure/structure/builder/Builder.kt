@@ -13,7 +13,6 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
-import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_INSUFFICIENT_ITEMS
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_STATUS_ERROR
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_OVERLAP
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
@@ -25,10 +24,8 @@ import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.Structure
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureInitializedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.call
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.getRelative
-import org.wolflink.minecraft.plugin.eclipticstructure.extension.takeItems
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.BuilderRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
-import org.wolflink.minecraft.plugin.eclipticstructure.structure.registry.StructureRegistry
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.Zone
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.registry.StructureRegistryItem
 import java.util.concurrent.atomic.AtomicInteger
@@ -118,10 +115,11 @@ class Builder(
     private val averageDelayMills: Long = (blueprint.buildSeconds / blockMap.size.toDouble() * 1000).toLong()
     val buildProgress get() = nowIndex.toDouble() / blockMap.size
     val buildTimeLeft get() = blueprint.buildSeconds - (blueprint.buildSeconds * buildProgress).toInt()
+    // 首次检测，判定是否有足够空间
+    private var firstCheck = false
     private suspend fun startBuilding() {
-        status = Status.IN_PROGRESS
-        // 建筑前检查
-        buildCheck()
+        // 实时更新状态
+        asyncStatusUpdate()
         // 放置方块
         placeBlocks()
         status = Status.COMPLETED
@@ -130,16 +128,18 @@ class Builder(
         StructureCompletedEvent(structure).call()
         structure.available = true
     }
-    private suspend fun buildCheck() {
-        while (true) {
-            if(!zone.isEmpty()) status = Status.ZONE_NOT_EMPTY
-            else if(zone.players.isNotEmpty()) status = Status.ZONE_HAS_PLAYER
-            else if(!zone.hasFloor()) status = Status.ZONE_NO_FLOOR
-            else {
-                status = Status.IN_PROGRESS
-                break
+    private fun asyncStatusUpdate() {
+        EStructureScope.launch {
+            while (status != Status.COMPLETED) {
+                if(!firstCheck && !zone.isEmpty()) status = Status.ZONE_NOT_EMPTY
+                else if(zone.players.isNotEmpty()) status = Status.ZONE_HAS_PLAYER
+                else if(!zone.hasFloor()) status = Status.ZONE_NO_FLOOR
+                else {
+                    firstCheck = true
+                    status = Status.IN_PROGRESS
+                }
+                delay(5 * 1000)
             }
-            delay(5 * 1000)
         }
     }
     private suspend fun placeBlocks() {
@@ -147,11 +147,17 @@ class Builder(
         val list = blockMap.toList()
         val bukkitWorld = minLocation.world
         val weWorld = BukkitAdapter.adapt(bukkitWorld)
-        while (nowIndex++ < blockMap.size - 1) {
+        while (nowIndex < blockMap.size) {
+            // 建造状态异常
+            if(!firstCheck || status != Status.IN_PROGRESS) {
+                delay(1000 * 5)
+                continue
+            }
             val pair = list[nowIndex]
             val blockVector = pair.first
             val fullBlock = pair.second
             delay(averageDelayMills)
+            nowIndex++
             if(fullBlock.blockType.material.isAir && !pasteAir) continue
             // 坐标计算
             val x = minLocation.blockX + blockVector.blockX
