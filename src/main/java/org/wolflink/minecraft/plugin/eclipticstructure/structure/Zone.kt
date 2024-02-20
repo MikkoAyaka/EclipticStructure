@@ -127,6 +127,21 @@ data class Zone (
     }
 
     /**
+     * 计算区域有效空间百分比(非固体方块占整体空间的百分比)
+     */
+    suspend fun residualSpacePercent(): Double {
+        val deferredResults = mutableListOf<Deferred<Boolean>>()
+        forEach { world, x, y, z ->
+            val deferred = EStructureScope.async {
+                val block = world.getBlockAt(x, y, z)
+                block.type.isSolid
+            }
+            deferredResults.add(deferred)
+        }
+        val results = deferredResults.awaitAll()
+        return results.count { !it } / results.size.toDouble()
+    }
+    /**
      * 该区域是否无实体方块遮挡，也没有玩家在区域中(忽略草丛鲜花等)
      */
     suspend fun isEmpty(): Boolean {

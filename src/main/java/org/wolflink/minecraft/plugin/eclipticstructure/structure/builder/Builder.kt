@@ -5,6 +5,7 @@ import com.sk89q.worldedit.math.BlockVector3
 import com.sk89q.worldedit.world.block.BaseBlock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Container
@@ -14,6 +15,7 @@ import org.bukkit.inventory.ItemStack
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_STATUS_ERROR
+import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_NOT_ENOUGH_SPACE
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_OVERLAP
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
 import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderCompletedEvent
@@ -89,6 +91,11 @@ class Builder(
             player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR)
             return false
         }
+        // 缺乏空间
+        if(runBlocking { return@runBlocking zone.residualSpacePercent() < 0.65 }) {
+            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_ZONE_NOT_ENOUGH_SPACE)
+            return false
+        }
         // 空间存在重叠
         if(ZoneRepository.findByOverlap(zone).isNotEmpty()) {
             player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_ZONE_OVERLAP)
@@ -131,7 +138,7 @@ class Builder(
     private fun asyncStatusUpdate() {
         EStructureScope.launch {
             while (status != Status.COMPLETED) {
-                if(!firstCheck && !zone.isEmpty()) status = Status.ZONE_NOT_EMPTY
+                if(!firstCheck && zone.residualSpacePercent() < 0.75) status = Status.ZONE_NOT_EMPTY
                 else if(zone.players.isNotEmpty()) status = Status.ZONE_HAS_PLAYER
                 else if(!zone.hasFloor()) status = Status.ZONE_NO_FLOOR
                 else {
