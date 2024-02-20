@@ -85,14 +85,14 @@ class Builder(
             field = value
         }
 
-    fun canBuild(player: Player): Boolean {
+    suspend fun canBuild(player: Player): Boolean {
         // 状态异常
         if (status != Status.NOT_STARTED) {
             player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR)
             return false
         }
         // 缺乏空间
-        if(runBlocking { return@runBlocking zone.residualSpacePercent() < 0.65 }) {
+        if(zone.residualSpacePercent() < 0.65 ) {
             player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_ZONE_NOT_ENOUGH_SPACE)
             return false
         }
@@ -107,11 +107,11 @@ class Builder(
      * 准备进行建造
      */
     fun build(player: Player) {
-        // 建筑前检查
-        if(!canBuild(player)) return
-        StructureInitializedEvent(structure).call()
-        // 开始建造
         EStructureScope.launch {
+            // 建筑前检查
+            if(!canBuild(player)) return@launch
+            EclipticStructure.runTask { StructureInitializedEvent(structure).call() }
+            // 开始建造
             BuilderStartedEvent(this@Builder,player).call()
             startBuilding()
         }
