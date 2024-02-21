@@ -18,7 +18,7 @@ abstract class Structure(
     companion object {
         val AUTOMATIC_ID = AtomicInteger(0)
     }
-    abstract val customListener: IStructureListener?
+    abstract val customListeners: List<IStructureListener>
     val decorator by lazy { StructureDecorator(this) }
     val handler by lazy { StructureHandler(this) }
     val zone = builder.zone
@@ -62,7 +62,7 @@ abstract class Structure(
     fun doDamage(damage: Double,sourceType: DamageSource,source: Any) {
         doDamage(damage.toInt(),sourceType,source)
     }
-    fun doDamage(damage: Int, sourceType: DamageSource,source: Any) {
+    fun doDamage(damage: Int, sourceType: DamageSource,source: Any? = null) {
         EclipticStructure.runTask {
             val event = StructureDurabilityDamageEvent(this,sourceType,source,damage)
             Bukkit.getPluginManager().callEvent(event)

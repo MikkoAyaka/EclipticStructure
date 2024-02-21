@@ -5,7 +5,7 @@ import com.sk89q.worldedit.math.BlockVector3
 import com.sk89q.worldedit.world.block.BaseBlock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Container
@@ -18,10 +18,7 @@ import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_NOT_ENOUGH_SPACE
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_OVERLAP
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
-import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderCompletedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderDestroyedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStartedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStatusEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.*
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureCompletedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureInitializedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.call
@@ -65,7 +62,7 @@ class Builder(
     val blockAmount = blockMap.filterNot { it.value.material.isAir }.size
     // 建筑占用区域(不可重复)
     val zone = Zone.create(buildLocation.world, clipboard.getRelative(buildLocation), clipboard)
-    private val structure by lazy { structureMeta.structureSupplier(structureLevel,this) }
+    val structure by lazy { structureMeta.structureSupplier(structureLevel,this) }
     /**
      * 建造状态
      */
@@ -85,7 +82,7 @@ class Builder(
             field = value
         }
 
-    suspend fun canBuild(player: Player): Boolean {
+    private suspend fun canBuild(player: Player): Boolean {
         // 状态异常
         if (status != Status.NOT_STARTED) {
             player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR)
@@ -107,13 +104,18 @@ class Builder(
      * 准备进行建造
      */
     fun build(player: Player) {
-        EStructureScope.launch {
-            // 建筑前检查
-            if(!canBuild(player)) return@launch
-            EclipticStructure.runTask { StructureInitializedEvent(structure).call() }
-            // 开始建造
-            BuilderStartedEvent(this@Builder,player).call()
-            startBuilding()
+        EclipticStructure.runTask {
+            val event = BuilderPreBuildEvent(this,player)
+            Bukkit.getPluginManager().callEvent(event)
+            if(event.isCancelled) return@runTask
+            EStructureScope.launch {
+                // 建筑前检查
+                if(!canBuild(player)) return@launch
+                EclipticStructure.runTask { StructureInitializedEvent(structure).call() }
+                // 开始建造
+                BuilderStartedEvent(this@Builder,player).call()
+                startBuilding()
+            }
         }
     }
     // 指针当前方块未建造

@@ -2,10 +2,7 @@ package org.wolflink.minecraft.plugin.eclipticstructure.structure.builder
 
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderCompletedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderDestroyedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStartedEvent
-import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderStatusEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.*
 
 object BuilderListener: Listener, IBuilderListener {
     @EventHandler
@@ -19,6 +16,10 @@ object BuilderListener: Listener, IBuilderListener {
     @EventHandler
     override fun destroyed(e: BuilderDestroyedEvent) {
         e.builder.decorator.destroyed(e)
+    }
+
+    override fun preBuild(e: BuilderPreBuildEvent) {
+        e.builder.decorator.preBuild(e)
     }
 
     @EventHandler
