@@ -158,7 +158,7 @@ data class Zone (
     }
 
     /**
-     * 该区域是否拥有地板
+     * 该区域是否拥有地板(达到80%固体块)
      */
     suspend fun hasFloor(): Boolean {
         val world = Bukkit.getWorld(worldName) ?: throw IllegalStateException("不可能发生的错误，未找到世界：$worldName")
@@ -173,7 +173,7 @@ data class Zone (
             }
         }
         val results = deferredResults.awaitAll()
-        return results.all { it }
+        return results.count { it } >= 0.8 * results.size
     }
     operator fun contains(point: Location) =
         point.world.name == worldName
