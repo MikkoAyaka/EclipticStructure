@@ -27,7 +27,8 @@ object StructureDurabilityListener: Listener {
     private val random = Random()
     @EventHandler
     fun onPlayerBreak(e: BlockBreakEvent) {
-        val structure = ZoneRepository.findByLocation(e.block.location).map(StructureZoneRelationRepository::find1).firstOrNull() ?: return
+        val structure = ZoneRepository.findByLocation(e.block.location)
+            .firstNotNullOfOrNull(StructureZoneRelationRepository::find1) ?: return
         if(structure.builder.status != Builder.Status.COMPLETED) return
         e.isDropItems = false
         e.expToDrop = 0
@@ -59,7 +60,7 @@ object StructureDurabilityListener: Listener {
         // 与爆炸重叠的区域
         ZoneRepository.findByOverlap(zone)
             // 被爆炸影响的建筑结构
-            .map(StructureZoneRelationRepository::find1)
+            .mapNotNull(StructureZoneRelationRepository::find1)
             // 建造完成的建筑结构
             .filter { it.builder.status == Builder.Status.COMPLETED }
             // 造成 20% ~ 50% 最大耐久值的损害
