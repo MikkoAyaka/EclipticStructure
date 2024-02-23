@@ -11,6 +11,7 @@ import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.util.BoundingBox
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
+import org.wolflink.minecraft.plugin.eclipticstructure.META_BLOCK_BREAKABLE
 import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.BuilderCompletedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureDestroyedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureZoneRelationRepository
@@ -27,17 +28,21 @@ object StructureDurabilityListener: Listener {
     private val random = Random()
     @EventHandler
     fun onPlayerBreak(e: BlockBreakEvent) {
-        val structure = ZoneRepository.findByLocation(e.block.location)
-            .firstNotNullOfOrNull(StructureZoneRelationRepository::find1) ?: return
-        if(structure.builder.status != Builder.Status.COMPLETED) return
-        e.isDropItems = false
-        e.expToDrop = 0
-        e.isCancelled = true
-        structure.doDamage(
-            1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability,
-            Structure.DamageSource.PLAYER_BREAK,
-            e.player
-        )
+        if(!e.block.hasMetadata(META_BLOCK_BREAKABLE)) return
+        val breakable = e.block.getMetadata(META_BLOCK_BREAKABLE).firstOrNull()?.asBoolean()!!
+        if(!breakable) {
+            val structure = ZoneRepository.findByLocation(e.block.location)
+                .firstNotNullOfOrNull(StructureZoneRelationRepository::find1) ?: return
+            if(structure.builder.status != Builder.Status.COMPLETED) return
+            e.isDropItems = false
+            e.expToDrop = 0
+            e.isCancelled = true
+            structure.doDamage(
+                1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability,
+                Structure.DamageSource.PLAYER_BREAK,
+                e.player
+            )
+        }
     }
     private fun onExploration(source: Any,worldName:String,blockList: List<Block>) {
         var minX: Int = Int.MAX_VALUE;var minY: Int = Int.MAX_VALUE;var minZ: Int = Int.MAX_VALUE
