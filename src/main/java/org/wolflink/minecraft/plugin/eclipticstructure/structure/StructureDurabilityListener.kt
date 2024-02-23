@@ -37,11 +37,7 @@ object StructureDurabilityListener: Listener {
             e.isDropItems = false
             e.expToDrop = 0
             e.isCancelled = true
-            structure.doDamage(
-                1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability,
-                Structure.DamageSource.PLAYER_BREAK,
-                e.player
-            )
+            structure.doRepair(1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability * 0.5)
         }
     }
     private fun onExploration(source: Any,worldName:String,blockList: List<Block>) {
@@ -68,10 +64,10 @@ object StructureDurabilityListener: Listener {
             .mapNotNull(StructureZoneRelationRepository::find1)
             // 建造完成的建筑结构
             .filter { it.builder.status == Builder.Status.COMPLETED }
-            // 造成 20% ~ 50% 最大耐久值的损害
+            // 造成 20% + 2000 最大耐久值的损害
             .forEach{
                 it.doDamage(
-                    random.nextDouble(0.2,0.5) * it.blueprint.maxDurability,
+                    0.2 * it.blueprint.maxDurability + 2000,
                     Structure.DamageSource.EXPLORATION,
                     source
                 )

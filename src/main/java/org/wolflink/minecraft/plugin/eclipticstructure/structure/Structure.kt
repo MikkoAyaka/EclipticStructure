@@ -55,6 +55,16 @@ abstract class Structure(
         builder.destroy()
         StructureDestroyedEvent(this).call()
     }
+
+    /**
+     * 修理建筑
+     * TODO 有特殊能力的玩家修理建筑效果翻倍
+     */
+    fun doRepair(value: Int) {
+        if(durability + value > blueprint.maxDurability) durability = blueprint.maxDurability
+        else durability += value
+    }
+    fun doRepair(value: Double) = doRepair(value.toInt())
     /**
      * 对建筑造成伤害
      * TODO 允许使用修饰器调整某一类伤害
