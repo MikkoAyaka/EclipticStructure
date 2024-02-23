@@ -6,6 +6,7 @@ import com.sk89q.worldedit.world.block.BaseBlock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Container
@@ -141,7 +142,7 @@ class Builder(
         EStructureScope.launch {
             while (status != Status.COMPLETED) {
                 if(!firstCheck && zone.residualSpacePercent() < 0.75) status = Status.ZONE_NOT_EMPTY
-                else if(zone.players.isNotEmpty()) status = Status.ZONE_HAS_PLAYER
+                else if(zone.players.any { it.gameMode != GameMode.SPECTATOR }) status = Status.ZONE_HAS_PLAYER
                 else if(!zone.hasFloor()) status = Status.ZONE_NO_FLOOR
                 else {
                     firstCheck = true
