@@ -5,6 +5,7 @@ import org.bukkit.block.Block
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Monster
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
@@ -26,14 +27,13 @@ object StructureDurabilityListener: Listener {
     // 每只怪物对建筑造成的伤害
     private const val PER_MONSTER_DAMAGE = 30
     private val random = Random()
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     fun onPlayerBreak(e: BlockBreakEvent) {
         if(!e.block.hasMetadata(META_BLOCK_BREAKABLE)) return
         val breakable = e.block.getMetadata(META_BLOCK_BREAKABLE).firstOrNull()?.asBoolean()!!
         if(!breakable) {
             val structure = ZoneRepository.findByLocation(e.block.location)
                 .firstNotNullOfOrNull(StructureZoneRelationRepository::find1) ?: return
-            if(structure.builder.status != Builder.Status.COMPLETED) return
             e.isDropItems = false
             e.expToDrop = 0
             e.isCancelled = true

@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.metadata.FixedMetadataValue
 import org.wolflink.minecraft.plugin.eclipticstructure.EclipticStructure
 import org.wolflink.minecraft.plugin.eclipticstructure.META_BLOCK_BREAKABLE
+import org.wolflink.minecraft.plugin.eclipticstructure.META_STRUCTURE_ID
 import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_STATUS_ERROR
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_NOT_ENOUGH_SPACE
@@ -179,8 +180,13 @@ class Builder(
             EclipticStructure.runTask {
                 // 放置方块
                 weWorld.setBlock(x, y, z, fullBlock.toBlockState())
-                // 添加不可破坏标签
-                bukkitWorld.getBlockAt(x,y,z).setMetadata(META_BLOCK_BREAKABLE,FixedMetadataValue(EclipticStructure.instance,false))
+                // 方块标签
+                bukkitWorld.getBlockAt(x,y,z).also {
+                    // 添加不可破坏标签
+                    it.setMetadata(META_BLOCK_BREAKABLE,FixedMetadataValue(EclipticStructure.instance,false))
+                    // 添加建筑ID标识
+                    it.setMetadata(META_STRUCTURE_ID,FixedMetadataValue(EclipticStructure.instance,id))
+                }
                 // 播放方块放置音效
                 bukkitWorld.playSound(Location(bukkitWorld,x.toDouble(),y.toDouble(),z.toDouble()),material.soundGroup.placeSound,1f,1f)
             }

@@ -2,7 +2,10 @@ package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockBreakEvent
+import org.wolflink.minecraft.plugin.eclipticstructure.META_STRUCTURE_ID
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.*
+import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
 
 object StructureListener: Listener,IStructureListener {
     @EventHandler
@@ -40,5 +43,13 @@ object StructureListener: Listener,IStructureListener {
         e.structure.handler.onDurabilityDamage(e)
         e.structure.customListeners.forEach { it.onDurabilityDamage(e) }
         e.structure.decorator.onDurabilityDamage(e)
+    }
+
+    @EventHandler
+    override fun onBlockBreak(e: BlockBreakEvent) {
+        if(!e.block.hasMetadata(META_STRUCTURE_ID))return
+        val structureId = e.block.getMetadata(META_STRUCTURE_ID).first().asInt()
+        val structure = StructureRepository.find(structureId) ?: return
+        structure.customListeners.forEach { it.onBlockBreak(e) }
     }
 }
