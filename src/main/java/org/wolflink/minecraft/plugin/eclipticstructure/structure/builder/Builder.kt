@@ -41,7 +41,6 @@ class Builder(
     private val structureLevel: Int,
     structureMeta: StructureRegistryItem,
     buildLocation: Location,
-    private val pasteAir: Boolean,
 ) {
     val buildLocation = buildLocation.toCenterLocation()
     val decorator = BuilderDecorator(this)
@@ -166,7 +165,7 @@ class Builder(
             val fullBlock = pair.second
             delay(averageDelayMills)
             nowIndex++
-            if(fullBlock.blockType.material.isAir && !pasteAir) continue
+            if(fullBlock.blockType.material.isAir && !blueprint.pasteAir) continue
             // 坐标计算
             val x = minLocation.blockX + blockVector.blockX
             val y = minLocation.blockY + blockVector.blockY

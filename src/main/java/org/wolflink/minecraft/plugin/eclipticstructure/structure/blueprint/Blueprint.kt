@@ -16,7 +16,8 @@ open class Blueprint (
     private val structureLevel: Int,
     val structureName: String,
     val buildSeconds: Int,
-    val maxDurability: Int
+    val maxDurability: Int,
+    val pasteAir: Boolean = false
 ) {
     fun loadClipboard(): Clipboard {
         val schemFile = File(FileFolders.schemFolder, "$structureName-$structureLevel.schem")
