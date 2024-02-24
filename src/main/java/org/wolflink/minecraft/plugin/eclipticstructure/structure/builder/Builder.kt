@@ -101,11 +101,11 @@ class Builder(
     /**
      * 准备进行建造
      */
-    fun build(player: Player) {
+    fun build(player: Player,forceBuild: Boolean = false) {
         EclipticStructure.runTask {
             // 建筑前检查
-            if(!canBuild(player)) return@runTask
-            val event = BuilderPreBuildEvent(this,player)
+            if(!forceBuild && !canBuild(player)) return@runTask
+            val event = BuilderPreBuildEvent(this,player,forceBuild)
             // 外部处理
             Bukkit.getPluginManager().callEvent(event)
             if(event.isCancelled) return@runTask

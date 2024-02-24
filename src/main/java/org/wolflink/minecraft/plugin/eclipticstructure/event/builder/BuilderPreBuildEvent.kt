@@ -9,7 +9,7 @@ import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
 /**
  *  建造者即将开始建造之前(已完成基本建造检查逻辑)触发该事件
  */
-class BuilderPreBuildEvent(val builder: Builder,val player: Player): Event(), Cancellable {
+class BuilderPreBuildEvent(val builder: Builder,val player: Player,val forceBuild: Boolean): Event(), Cancellable {
     private var cancelled = false
     override fun getHandlers() = handlerList
     companion object {
