@@ -25,7 +25,7 @@ object StructureDurabilityListener: Listener {
     // 检查建筑周围存在怪物的半径
     private const val MONSTER_CHECK_RADIUS = 4.0
     // 每只怪物对建筑造成的伤害
-    private const val PER_MONSTER_DAMAGE = 30
+    private const val PER_MONSTER_DAMAGE = 0
     private val random = Random()
     @EventHandler(priority = EventPriority.LOWEST)
     fun onPlayerBreak(e: BlockBreakEvent) {
@@ -37,7 +37,7 @@ object StructureDurabilityListener: Listener {
             e.isDropItems = false
             e.expToDrop = 0
             e.isCancelled = true
-            structure.doRepair(1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability * 0.5)
+            structure.doRepair(1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability * 5)
         }
     }
     private fun onExploration(source: Any,worldName:String,blockList: List<Block>) {
