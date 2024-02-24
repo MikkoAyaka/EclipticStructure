@@ -7,7 +7,7 @@ import org.bukkit.event.HandlerList
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.builder.Builder
 
 /**
- *  建造者开始建造检查逻辑之前触发该事件
+ *  建造者即将开始建造之前(已完成基本建造检查逻辑)触发该事件
  */
 class BuilderPreBuildEvent(val builder: Builder,val player: Player): Event(), Cancellable {
     private var cancelled = false

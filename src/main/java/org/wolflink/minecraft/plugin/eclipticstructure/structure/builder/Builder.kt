@@ -86,15 +86,10 @@ class Builder(
             field = value
         }
 
-    private suspend fun canBuild(player: Player): Boolean {
+    private fun canBuild(player: Player): Boolean {
         // 状态异常
         if (status != Status.NOT_STARTED) {
             player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR)
-            return false
-        }
-        // 缺乏空间
-        if(zone.residualSpacePercent() < 0.65 ) {
-            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_ZONE_NOT_ENOUGH_SPACE)
             return false
         }
         // 空间存在重叠
@@ -109,14 +104,14 @@ class Builder(
      */
     fun build(player: Player) {
         EclipticStructure.runTask {
+            // 建筑前检查
+            if(!canBuild(player)) return@runTask
             val event = BuilderPreBuildEvent(this,player)
+            // 外部处理
             Bukkit.getPluginManager().callEvent(event)
             if(event.isCancelled) return@runTask
             EStructureScope.launch {
-                // 建筑前检查
-                if(!canBuild(player)) return@launch
-                EclipticStructure.runTask { StructureInitializedEvent(structure).call() }
-                // 开始建造
+                StructureInitializedEvent(structure).call()
                 BuilderStartedEvent(this@Builder,player).call()
                 startBuilding()
             }
