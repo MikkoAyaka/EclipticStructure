@@ -22,11 +22,13 @@ import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_NOT_ENOUGH_SPACE
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_OVERLAP
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
+import org.wolflink.minecraft.plugin.eclipticstructure.esLogger
 import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.*
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureCompletedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.StructureInitializedEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.call
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.getRelative
+import org.wolflink.minecraft.plugin.eclipticstructure.extension.toComponent
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.BuilderRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.ZoneRepository
 import org.wolflink.minecraft.plugin.eclipticstructure.structure.Zone
@@ -98,20 +100,29 @@ class Builder(
         }
         return true
     }
+
     /**
-     * 准备进行建造
+     * @param player        发起建造的玩家
+     * @param broadcast     是否发起公告通知所有玩家
+     * @param floorCheck    是否进行地板检测
+     * @param playerCheck   是否进行玩家检测
+     * @param zoneCheck     是否进行空间检测(需要剩余空间)
      */
-    fun build(player: Player,forceBuild: Boolean = false) {
+    fun build(player: Player,broadcast: Boolean,floorCheck: Boolean,playerCheck: Boolean,zoneCheck: Boolean) {
         EclipticStructure.runTask {
             // 建筑前检查
-            if(!forceBuild && !canBuild(player)) return@runTask
-            val event = BuilderPreBuildEvent(this,player,forceBuild)
+            if(!canBuild(player)) return@runTask
+            val event = BuilderPreBuildEvent(this,player,broadcast,floorCheck,playerCheck,zoneCheck)
             // 外部处理
             Bukkit.getPluginManager().callEvent(event)
             if(event.isCancelled) return@runTask
+            Bukkit.broadcast("$MESSAGE_PREFIX <green>${player.name} <white>开始建造 <yellow>${blueprint.structureName} <white>了。".toComponent())
             EStructureScope.launch {
                 StructureInitializedEvent(structure).call()
                 BuilderStartedEvent(this@Builder,player).call()
+                // 实时更新状态
+                asyncStatusUpdate(floorCheck, playerCheck, zoneCheck)
+                // 尝试开始建造
                 startBuilding()
             }
         }
@@ -125,8 +136,6 @@ class Builder(
     // 首次检测，判定是否有足够空间
     private var firstCheck = false
     private suspend fun startBuilding() {
-        // 实时更新状态
-        asyncStatusUpdate()
         // 放置方块
         placeBlocks()
         status = Status.COMPLETED
@@ -135,12 +144,13 @@ class Builder(
         StructureCompletedEvent(structure).call()
         structure.available = true
     }
-    private fun asyncStatusUpdate() {
+    private fun asyncStatusUpdate(floorCheck: Boolean,playerCheck: Boolean,zoneCheck: Boolean) {
+        if(!floorCheck && !playerCheck && !zoneCheck) return
         EStructureScope.launch {
             while (status != Status.COMPLETED) {
-                if(!firstCheck && zone.residualSpacePercent() < 0.75) status = Status.ZONE_NOT_EMPTY
-                else if(zone.players.any { it.gameMode != GameMode.SPECTATOR }) status = Status.ZONE_HAS_PLAYER
-                else if(!zone.hasFloor()) status = Status.ZONE_NO_FLOOR
+                if(zoneCheck && !firstCheck && zone.residualSpacePercent() < 0.75) status = Status.ZONE_NOT_EMPTY
+                else if(playerCheck && zone.players.any { it.gameMode != GameMode.SPECTATOR }) status = Status.ZONE_HAS_PLAYER
+                else if(floorCheck && !zone.hasFloor()) status = Status.ZONE_NO_FLOOR
                 else {
                     firstCheck = true
                     status = Status.IN_PROGRESS
@@ -157,7 +167,7 @@ class Builder(
         while (nowIndex < blockMap.size) {
             // 建造状态异常
             if(!firstCheck || status != Status.IN_PROGRESS) {
-                delay(1000 * 5)
+                delay(1000)
                 continue
             }
             val pair = list[nowIndex]
