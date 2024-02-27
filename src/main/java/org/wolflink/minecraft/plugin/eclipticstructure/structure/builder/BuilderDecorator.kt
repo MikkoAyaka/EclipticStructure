@@ -64,7 +64,7 @@ class BuilderDecorator(private val builder: Builder) : IBuilderListener {
     }
 
     override fun started(e: BuilderStartedEvent) {
-        e.player.sendMessage((MESSAGE_PREFIX + STRUCTURE_BUILDER_START_BUILDING).toComponent())
+        e.player.sendMessage("$MESSAGE_PREFIX $STRUCTURE_BUILDER_START_BUILDING".toComponent())
         hologram.create()
     }
 

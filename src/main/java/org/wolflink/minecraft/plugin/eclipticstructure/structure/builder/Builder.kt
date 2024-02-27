@@ -89,12 +89,12 @@ class Builder(
     private fun canBuild(player: Player): Boolean {
         // 状态异常
         if (status != Status.NOT_STARTED) {
-            player.sendMessage((MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR).toComponent())
+            player.sendMessage("$MESSAGE_PREFIX $STRUCTURE_BUILDER_STATUS_ERROR".toComponent())
             return false
         }
         // 空间存在重叠
         if(ZoneRepository.findByOverlap(zone).isNotEmpty()) {
-            player.sendMessage((MESSAGE_PREFIX + STRUCTURE_BUILDER_ZONE_OVERLAP).toComponent())
+            player.sendMessage("$MESSAGE_PREFIX $STRUCTURE_BUILDER_ZONE_OVERLAP".toComponent())
             return false
         }
         return true
@@ -115,7 +115,10 @@ class Builder(
             // 外部处理
             Bukkit.getPluginManager().callEvent(event)
             if(event.isCancelled) return@runTask
-            Bukkit.broadcast("$MESSAGE_PREFIX <green>${player.name} <white>开始建造 <yellow>${blueprint.structureName} <white>了。".toComponent())
+            val broadcastText = listOf(
+                "坐标 ${buildLocation.toVector()}",
+            )
+            Bukkit.broadcast("$MESSAGE_PREFIX <green>${player.name} <white>开始建造 <yellow>${blueprint.structureName} <white>了。<hover:show_text:'<newline>${broadcastText.joinToString(separator = "<newline>")}<newline>'><yellow>[详情]".toComponent())
             EStructureScope.launch {
                 StructureInitializedEvent(structure).call()
                 BuilderStartedEvent(this@Builder,player).call()
@@ -144,7 +147,11 @@ class Builder(
         structure.available = true
     }
     private fun asyncStatusUpdate(floorCheck: Boolean,playerCheck: Boolean,zoneCheck: Boolean) {
-        if(!floorCheck && !playerCheck && !zoneCheck) return
+        if(!floorCheck && !playerCheck && !zoneCheck) {
+            firstCheck = true
+            status = Status.IN_PROGRESS
+            return
+        }
         EStructureScope.launch {
             while (status != Status.COMPLETED) {
                 if(zoneCheck && !firstCheck && zone.residualSpacePercent() < 0.75) status = Status.ZONE_NOT_EMPTY
