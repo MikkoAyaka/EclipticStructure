@@ -12,6 +12,7 @@ import org.wolflink.minecraft.plugin.eclipticstructure.display.ESHologram
 import org.wolflink.minecraft.plugin.eclipticstructure.event.builder.*
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.GREEN_DUST_PARTICLE_OPTIONS
 import org.wolflink.minecraft.plugin.eclipticstructure.extension.RED_DUST_PARTICLE_OPTIONS
+import org.wolflink.minecraft.plugin.eclipticstructure.extension.toComponent
 
 /**
  * 建造者装饰器
@@ -63,7 +64,7 @@ class BuilderDecorator(private val builder: Builder) : IBuilderListener {
     }
 
     override fun started(e: BuilderStartedEvent) {
-        e.player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_START_BUILDING)
+        e.player.sendMessage((MESSAGE_PREFIX + STRUCTURE_BUILDER_START_BUILDING).toComponent())
         hologram.create()
     }
 

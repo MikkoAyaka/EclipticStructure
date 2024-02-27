@@ -19,7 +19,6 @@ import org.wolflink.minecraft.plugin.eclipticstructure.META_BLOCK_BREAKABLE
 import org.wolflink.minecraft.plugin.eclipticstructure.META_STRUCTURE_ID
 import org.wolflink.minecraft.plugin.eclipticstructure.config.MESSAGE_PREFIX
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_STATUS_ERROR
-import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_NOT_ENOUGH_SPACE
 import org.wolflink.minecraft.plugin.eclipticstructure.config.STRUCTURE_BUILDER_ZONE_OVERLAP
 import org.wolflink.minecraft.plugin.eclipticstructure.coroutine.EStructureScope
 import org.wolflink.minecraft.plugin.eclipticstructure.esLogger
@@ -90,12 +89,12 @@ class Builder(
     private fun canBuild(player: Player): Boolean {
         // 状态异常
         if (status != Status.NOT_STARTED) {
-            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR)
+            player.sendMessage((MESSAGE_PREFIX + STRUCTURE_BUILDER_STATUS_ERROR).toComponent())
             return false
         }
         // 空间存在重叠
         if(ZoneRepository.findByOverlap(zone).isNotEmpty()) {
-            player.sendMessage(MESSAGE_PREFIX + STRUCTURE_BUILDER_ZONE_OVERLAP)
+            player.sendMessage((MESSAGE_PREFIX + STRUCTURE_BUILDER_ZONE_OVERLAP).toComponent())
             return false
         }
         return true
