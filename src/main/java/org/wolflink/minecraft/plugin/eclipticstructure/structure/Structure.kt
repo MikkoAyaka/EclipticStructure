@@ -49,7 +49,7 @@ abstract class Structure(
     /**
      * 摧毁建筑
      */
-    private fun destroy() {
+    protected fun destroy() {
         available = false
         destroyed = true
         builder.destroy()

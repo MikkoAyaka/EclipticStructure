@@ -13,7 +13,7 @@ import java.io.FileNotFoundException
  * @param requiredItems 建筑材料(材质不重复，数量可超过64)
  */
 open class Blueprint (
-    private val structureLevel: Int,
+    val structureLevel: Int,
     val structureName: String,
     val buildSeconds: Int,
     val maxDurability: Int,
