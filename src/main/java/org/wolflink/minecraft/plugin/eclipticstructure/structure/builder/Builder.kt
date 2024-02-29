@@ -194,10 +194,12 @@ class Builder(
                 weWorld.setBlock(x, y, z, fullBlock.toBlockState())
                 // 方块标签
                 bukkitWorld.getBlockAt(x,y,z).also {
-                    // 添加不可破坏标签
-                    it.setMetadata(META_BLOCK_BREAKABLE,FixedMetadataValue(EclipticStructure.instance,false))
-                    // 添加建筑ID标识
-                    it.setMetadata(META_STRUCTURE_ID,FixedMetadataValue(EclipticStructure.instance,id))
+                    if(!it.type.isAir) {
+                        // 添加不可破坏标签
+                        it.setMetadata(META_BLOCK_BREAKABLE,FixedMetadataValue(EclipticStructure.instance,false))
+                        // 添加建筑ID标识
+                        it.setMetadata(META_STRUCTURE_ID,FixedMetadataValue(EclipticStructure.instance,id))
+                    }
                 }
                 // 播放方块放置音效
                 bukkitWorld.playSound(Location(bukkitWorld,x.toDouble(),y.toDouble(),z.toDouble()),material.soundGroup.placeSound,1f,1f)
