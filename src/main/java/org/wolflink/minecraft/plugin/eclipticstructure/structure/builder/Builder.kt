@@ -115,10 +115,12 @@ class Builder(
             // 外部处理
             Bukkit.getPluginManager().callEvent(event)
             if(event.isCancelled) return@runTask
-            val broadcastText = listOf(
-                "坐标 ${buildLocation.toVector()}",
-            )
-            Bukkit.broadcast("$MESSAGE_PREFIX <green>${player.name} <white>开始建造 <yellow>${blueprint.structureName} <white>了。<hover:show_text:'<newline>${broadcastText.joinToString(separator = "<newline>")}<newline>'><yellow>[详情]".toComponent())
+            if(broadcast) {
+                val broadcastText = listOf(
+                    "坐标 ${buildLocation.toVector()}",
+                )
+                Bukkit.broadcast("$MESSAGE_PREFIX <green>${player.name} <white>开始建造 <yellow>${blueprint.structureName} <white>了。<hover:show_text:'<newline>${broadcastText.joinToString(separator = "<newline>")}<newline>'><yellow>[详情]".toComponent())
+            }
             EStructureScope.launch {
                 StructureInitializedEvent(structure).call()
                 BuilderStartedEvent(this@Builder,player).call()
