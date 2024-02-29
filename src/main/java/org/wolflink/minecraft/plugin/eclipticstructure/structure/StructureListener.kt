@@ -3,6 +3,7 @@ package org.wolflink.minecraft.plugin.eclipticstructure.structure
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.wolflink.minecraft.plugin.eclipticstructure.META_STRUCTURE_ID
 import org.wolflink.minecraft.plugin.eclipticstructure.event.structure.*
 import org.wolflink.minecraft.plugin.eclipticstructure.repository.StructureRepository
@@ -51,5 +52,12 @@ object StructureListener: Listener,IStructureListener {
         val structureId = e.block.getMetadata(META_STRUCTURE_ID).first().asInt()
         val structure = StructureRepository.find(structureId) ?: return
         structure.customListeners.forEach { it.onBlockBreak(e) }
+    }
+    @EventHandler
+    override fun onInteract(e: PlayerInteractEvent) {
+        if(e.clickedBlock?.hasMetadata(META_STRUCTURE_ID) != true)return
+        val structureId = e.clickedBlock!!.getMetadata(META_STRUCTURE_ID).first().asInt()
+        val structure = StructureRepository.find(structureId) ?: return
+        structure.customListeners.forEach { it.onInteract(e) }
     }
 }
