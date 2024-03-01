@@ -26,20 +26,6 @@ object StructureDurabilityListener: Listener {
     private const val MONSTER_CHECK_RADIUS = 4.0
     // 每只怪物对建筑造成的伤害
     private const val PER_MONSTER_DAMAGE = 0
-    private val random = Random()
-    @EventHandler(priority = EventPriority.LOWEST)
-    fun onPlayerBreak(e: BlockBreakEvent) {
-        if(!e.block.hasMetadata(META_BLOCK_BREAKABLE)) return
-        val breakable = e.block.getMetadata(META_BLOCK_BREAKABLE).firstOrNull()?.asBoolean()!!
-        if(!breakable) {
-            val structure = ZoneRepository.findByLocation(e.block.location)
-                .firstNotNullOfOrNull(StructureZoneRelationRepository::find1) ?: return
-            e.isDropItems = false
-            e.expToDrop = 0
-            e.isCancelled = true
-            structure.doRepair(1.0 / structure.builder.blockAmount * structure.blueprint.maxDurability * 5)
-        }
-    }
     private fun onExploration(source: Any,worldName:String,blockList: List<Block>) {
         var minX: Int = Int.MAX_VALUE;var minY: Int = Int.MAX_VALUE;var minZ: Int = Int.MAX_VALUE
         var maxX: Int = Int.MIN_VALUE;var maxY: Int = Int.MIN_VALUE;var maxZ: Int = Int.MIN_VALUE
