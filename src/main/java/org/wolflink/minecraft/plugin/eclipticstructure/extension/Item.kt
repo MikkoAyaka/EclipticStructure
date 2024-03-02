@@ -1,17 +1,21 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.extension
 
-import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.ItemMeta
 
 /**
  * 判断玩家背包中是否包含物品
   */
-fun Player.hasItems(items: Set<ItemStack>) = hasItems(items.associate { it.type to it.amount })
-fun Player.hasItems(items: Map<Material,Int>):Boolean {
+fun Player.hasItems(items: Set<ItemStack>) = hasItems(items.associate { it.itemMeta to it.amount })
+
+/**
+ * 物品元数据 -> 数量
+ */
+fun Player.hasItems(items: Map<ItemMeta,Int>):Boolean {
     val inventoryItems = this.inventory
         .filterNotNull()
-        .groupingBy { it.type }
+        .groupingBy { it.itemMeta }
         .fold(0) { acc, item -> acc + item.amount }
     for (item in items) {
         if(inventoryItems.getOrDefault(item.key,0) < item.value) return false
