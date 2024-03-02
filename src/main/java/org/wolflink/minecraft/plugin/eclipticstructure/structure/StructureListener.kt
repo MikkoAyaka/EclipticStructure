@@ -1,6 +1,7 @@
 package org.wolflink.minecraft.plugin.eclipticstructure.structure
 
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.player.PlayerInteractEvent
@@ -46,18 +47,19 @@ object StructureListener: Listener,IStructureListener {
         e.structure.decorator.onDurabilityDamage(e)
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     override fun onBlockBreak(e: BlockBreakEvent) {
         if(!e.block.hasMetadata(META_STRUCTURE_ID))return
         val structureId = e.block.getMetadata(META_STRUCTURE_ID).first().asInt()
-        val structure = StructureRepository.find(structureId) ?: return
+        val structure = StructureRepository.find(structureId) ?: throw IllegalStateException("方块存在建筑ID标签，但未找到相关建筑，ID：$structureId")
+        e.isCancelled = true
         structure.customListeners.forEach { it.onBlockBreak(e) }
     }
     @EventHandler
     override fun onInteract(e: PlayerInteractEvent) {
         if(e.clickedBlock?.hasMetadata(META_STRUCTURE_ID) != true)return
         val structureId = e.clickedBlock!!.getMetadata(META_STRUCTURE_ID).first().asInt()
-        val structure = StructureRepository.find(structureId) ?: return
+        val structure = StructureRepository.find(structureId) ?: throw IllegalStateException("方块存在建筑ID标签，但未找到相关建筑，ID：$structureId")
         structure.customListeners.forEach { it.onInteract(e) }
     }
 }
