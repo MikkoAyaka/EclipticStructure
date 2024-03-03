@@ -16,7 +16,8 @@ abstract class Structure(
     val builder: Builder
 ) {
     companion object {
-        val AUTOMATIC_ID = AtomicInteger(0)
+        private val AUTOMATIC_ID = AtomicInteger(0)
+            @Synchronized get
     }
     abstract val customListeners: List<IStructureListener>
     val decorator by lazy { StructureDecorator(this) }

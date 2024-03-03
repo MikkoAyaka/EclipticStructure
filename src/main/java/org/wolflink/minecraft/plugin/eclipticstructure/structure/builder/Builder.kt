@@ -46,7 +46,8 @@ class Builder(
     val buildLocation = buildLocation.toCenterLocation()
     val decorator = BuilderDecorator(this)
     companion object {
-        val AUTOMATIC_ID = AtomicInteger(0)
+        private val AUTOMATIC_ID = AtomicInteger(0)
+            @Synchronized get
     }
     val id = AUTOMATIC_ID.getAndIncrement()
     val uniqueName = "esbuilder_$id"
@@ -198,7 +199,7 @@ class Builder(
                         // 添加不可破坏标签
                         it.setMetadata(META_BLOCK_BREAKABLE,FixedMetadataValue(EclipticStructure.instance,false))
                         // 添加建筑ID标识
-                        it.setMetadata(META_STRUCTURE_ID,FixedMetadataValue(EclipticStructure.instance,id))
+                        it.setMetadata(META_STRUCTURE_ID,FixedMetadataValue(EclipticStructure.instance,structure.id))
                     }
                 }
                 // 播放方块放置音效
