@@ -227,6 +227,12 @@ class Builder(
                 }
             }
             block.type = Material.AIR
+            block.also {
+                // 删除不可破坏标签
+                it.removeMetadata(META_BLOCK_BREAKABLE,EclipticStructure.instance)
+                // 删除建筑ID标识
+                it.removeMetadata(META_STRUCTURE_ID,EclipticStructure.instance)
+            }
         }
         // 删除建筑本身的掉落物
         zone.world.getNearbyEntities(zone.toBoundingBox()) {
