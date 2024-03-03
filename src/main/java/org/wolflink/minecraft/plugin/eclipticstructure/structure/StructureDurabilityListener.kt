@@ -21,7 +21,7 @@ object StructureDurabilityListener: Listener {
     // 检查建筑周围存在怪物的半径
     private const val MONSTER_CHECK_RADIUS = 4.0
     // 每只怪物对建筑造成的伤害
-    private const val PER_MONSTER_DAMAGE = 10
+    private const val PER_MONSTER_DAMAGE = 3
     private fun onExploration(source: Any,worldName:String,blockList: List<Block>) {
         var minX: Int = Int.MAX_VALUE;var minY: Int = Int.MAX_VALUE;var minZ: Int = Int.MAX_VALUE
         var maxX: Int = Int.MIN_VALUE;var maxY: Int = Int.MIN_VALUE;var maxZ: Int = Int.MIN_VALUE
