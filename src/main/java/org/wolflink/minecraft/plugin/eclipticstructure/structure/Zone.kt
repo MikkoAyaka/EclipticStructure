@@ -20,9 +20,9 @@ import kotlin.math.min
  */
 data class Zone (
     val worldName: String,
-    val xRange: IntRange,
-    val yRange: IntRange,
-    val zRange: IntRange
+    var xRange: IntRange,
+    var yRange: IntRange,
+    var zRange: IntRange
 ) {
     val id = AUTOMATIC_ID.getAndIncrement()
     val world: World = Bukkit.getWorld(worldName) ?: throw IllegalArgumentException("未知的世界：$worldName")
